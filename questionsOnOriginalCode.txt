@@ -1,0 +1,11 @@
+Questions:
+
+Meson.cxx:
+1- if((iE*iE)>(fM*fM)) why square ??
+2- do we assume c=1, so E2=m2+p2 ??
+
+VB.cxx:
+1- com = meson_lf + zero_m; ??? at the end of this boost 
+2- meson_cmf has already been defined at line 205 but redefined at 234?? may generate unpredicted behaviour. Line 236 might be dengerous.
+3- Is it decay in Flight? using CM frame variables...
+4- Line 264 ?? why just describe new and same objects ??
