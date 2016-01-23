@@ -3,6 +3,7 @@
 #include "darkSectorEvent.h"
 #include "darkSectorMeson.h"
 #include "darkSectorVB.h"
+#include "darkSectorFinalState.h"
 
 #include "TMath.h"
 #include "TSystemDirectory.h"
@@ -620,29 +621,143 @@ TFile *darkSectorUtilities::createDecayFile(const char *inputRootFileName,
 					    const char *treeName, 
 					    const char *outputRootFileName)
 {
+  
+  
+  // ### Grabbing the input ROOT file of VB's ###
   TFile *input = new TFile(inputRootFileName);
   TTree *tr = (TTree *)input->Get(treeName);
   
+  // ### Defining pointer to particles ###
   // darkSectorMeson *meson=0;  
   darkSectorVB *vb=0;
-
+  
+  
+  // ### Doing this a dumb way for now.....####
+  // ### need to write a function that does this cleaner ###
+  darkSectorFinalState *fs=0;
+  
+  
+  // ### Grabbing the branch which holds the VB's
   TBranch *id = tr->GetBranch("treeVB");
   id->SetAddress(&vb);
   
-  /*
-    TFile *output = new TFile(outputRootFileName,"RECREATE");
-    TTree *treeOut = new TTree("treeDecay","darkSectorDecay");
-    treeOut->Branch("treeVB","darkSectorVB",&vb,32000,1);
-    treeOut->SetDirectory(output);
-    treeOut->BranchRef();
-  */
-
+  // ### Creating the output file which will contain the ###
+  // ###     decay products of the vector bosons         ###
+  TFile *output = new TFile(outputRootFileName,"RECREATE");
+  TTree *treeOut = new TTree("treeVBDecay","darkSectorVBDecay");
+  
+  treeOut->Branch("treeVBDecay","darkSectorFinalState",&fs,32000,1);
+  treeOut->SetDirectory(output);
+  treeOut->BranchRef();
+  
+  TLorentzVector TempPi0, TempPhoton0, TempPhoton1, TempPhoton2;
+  TLorentzVector Temp;
+  // ###################################
+  // ### Looping over all the events ###
+  // ###################################
   //  for(Long64_t i=0;i<tr->GetEntries();i++) // *** meson track loop
   for(Int_t i=0;i<20;i++)
     {      
+      // ### Retreive this particular entry ###
       id->GetEntry(i);
-      vb->Dump();
-    }
+      
+      std::vector<TLorentzVector> vbTemp = vb->vectorBosonsVec();
+      
+      for (size_t a = 0; a < vbTemp.size(); a++)
+      	{
+	std::cout<<"Px = "<<vbTemp[a].Px()<<std::endl;
+	// ### Filling a temporary Lorentz Vector ###
+        Temp.SetPxPyPzE(vbTemp[a].Px(), vbTemp[a].Py(), vbTemp[a].Pz(), vbTemp[a].E() );
+	
+	// ### Getting ready to decay the VB ###
+        TGenPhaseSpace event_decay;
+        // ### Setting the daughters of the vector boson mass ###
+        // ###     e.g. pi0 = 135 MeV and photon = 0 MeV      ###
+        double daughter_mass[2] = {0.139, 0.0};
+	
+	event_decay.SetDecay(Temp, 2, daughter_mass);
+        // ### Perform the decay ###
+        event_decay.Generate();
+	
+	// ### Grab the information about the particles from the decay ###
+        TLorentzVector *pizero = event_decay.GetDecay(0);
+        TLorentzVector *photon0 =  event_decay.GetDecay(1);
+	
+	// ### Making a pointer from the decay to my Temp TLorentz Vector for Pi0's ###
+        TempPi0 = *pizero;
+        // ### Making a pointer from the decay to my Temp TLorentz Vector for Photon0 ###
+        TempPhoton0 = *photon0;
+      
+        // ### Now we want to decay the Pi0 -> gamma, gamma and store the photons ###
+        TGenPhaseSpace event_pi0Daugther;
+        double pi0Daughter_mass[2] = {0.0, 0.0};
+      
+        event_pi0Daugther.SetDecay(TempPi0, 2, pi0Daughter_mass);
+        // ### Perform the decay ###
+        event_pi0Daugther.Generate();
+	
+	// ### Grab the information about the particles from the decay ###
+	TLorentzVector *photon1 = event_pi0Daugther.GetDecay(0);
+        TLorentzVector *photon2 = event_pi0Daugther.GetDecay(1);
+	
+	// ### Making a pointer from the decay to my Temp TLorentz Vector for Photon1 ###
+	TempPhoton1 = *photon1;
+	TempPhoton2 = *photon2;
+	 
+	
+	// ### Adding things by brute force for now...going to clean up....####
+	fs=new darkSectorFinalState();  
+	
+	      
+        fs->setTrackEventId(vb->getTrackEventId());
+        fs->setTrackEventFileId(vb->getTrackEventFileId());
+        fs->setTrackId(10001000+a);
+        fs->setTrackPDG(22);
+        fs->setTrackPx(photon0->Px());
+        fs->setTrackPy(photon0->Py());
+        fs->setTrackPz(photon0->Pz());
+        fs->setFSPEnergy(photon0->E());
+        fs->setFSPInvMass(0);
+	
+	treeOut->Fill();
+	
+	fs=new darkSectorFinalState();
+	fs->setTrackEventId(vb->getTrackEventId());
+        fs->setTrackEventFileId(vb->getTrackEventFileId());
+        fs->setTrackId(10002000+a);
+        fs->setTrackPDG(22);
+        fs->setTrackPx(photon1->Px());
+        fs->setTrackPy(photon1->Py());
+        fs->setTrackPz(photon1->Pz());
+        fs->setFSPEnergy(photon1->E());
+        fs->setFSPInvMass(0);
+	
+	treeOut->Fill();
+	
+	fs=new darkSectorFinalState();
+	fs->setTrackEventId(vb->getTrackEventId());
+        fs->setTrackEventFileId(vb->getTrackEventFileId());
+        fs->setTrackId(10003000+a);
+        fs->setTrackPDG(22);
+        fs->setTrackPx(photon2->Px());
+        fs->setTrackPy(photon2->Py());
+        fs->setTrackPz(photon2->Pz());
+        fs->setFSPEnergy(photon2->E());
+        fs->setFSPInvMass(0);
+	
+	treeOut->Fill();
+	
+	}//<---End loop over vector of VB's
+      
+      
+      
+      //vb->Dump();
+    }///<---End event loop
+    
+    
+output->cd();
+  output->Write();
+  output->Close();
 }
 
 
