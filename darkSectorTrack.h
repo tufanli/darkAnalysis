@@ -40,7 +40,7 @@ class darkSectorTrack : public TObject
  protected:
 	Long64_t m_trEventId;
 	Long64_t m_trEventFileId;
-	Int_t m_trId;
+	Long64_t m_trId;
 	Int_t m_trPDG;
 	Float_t m_trPx;
 	Float_t m_trPy;
