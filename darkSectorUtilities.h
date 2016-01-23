@@ -10,6 +10,7 @@ class darkSectorTrack;
 class darkSectorEvent;
 class darkSectorMeson;
 class darkSectorVB;
+class darkSectorFinalState;
 
 class darkSectorUtilities : public TObject
 {
@@ -44,7 +45,10 @@ class darkSectorUtilities : public TObject
   static TFile *createMesonFile(const char *inputRootFileName, 
 				const char *treeName, 
 				const char *outputRootFileName);
+  // I don't use it but it is a nice function
   static darkSectorMeson *generateMeson(darkSectorTrack *track);
+  static void setMesonProductionRatios(const char*inputRootFileName,
+				       const char*treeName);
 
   // *** step-4: create VB file
   static TFile *createVBFile(const char *inputRootFileName, 
