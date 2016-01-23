@@ -28,17 +28,14 @@ class darkSectorVB : public darkSectorTrack
   Float_t getInvMassCenterOfMass(){return m_vbInvMassCM;}
   
   // *** useful functions
-  //    TObjArray *vectorBosons() {return m_vbTracks;} // all vb tracks
-  //	TObjArray *initialPhotons() {return m_photonTracks;} // all photon tracks
+  // TObjArray *vectorBosons() {return m_vbTracks;} // all vb tracks
+  // TObjArray *initialPhotons() {return m_photonTracks;} // all photon tracks
   
-  //    TClonesArray *vectorBosons() {return m_vbTracks;} // all vb tracks
-  //	TClonesArray *initialPhotons() {return m_photonTracks;} // all photon tracks
+  // TClonesArray *vectorBosons() {return m_vbTracks;} // all vb tracks
+  // TClonesArray *initialPhotons() {return m_photonTracks;} // all photon tracks
   
   std::vector<TLorentzVector> vectorBosonsVec(){return m_vbTracks_vec;}
   std::vector<TLorentzVector> initialPhotonsVec(){return m_photonTracks_vec;}
-  
-  //  void addVB(TLorentzVector *track);
-  //  void addPhoton(TLorentzVector *track);
   
   void addVBVec(const TLorentzVector track);
   void addPhotonVec(const TLorentzVector track);
@@ -46,11 +43,12 @@ class darkSectorVB : public darkSectorTrack
  protected:
   Float_t m_vbInvMassLab;
   Float_t m_vbInvMassCM;
-  //	TObjArray *m_vbTracks;
-  //	TObjArray *m_photonTracks;
+  // TObjArray *m_vbTracks;
+  // TObjArray *m_photonTracks;
   
-  //TClonesArray *m_vbTracks;
-  //TClonesArray *m_photonTracks;
+  // TClonesArray *m_vbTracks;
+  // TClonesArray *m_photonTracks;
+
   std::vector<TLorentzVector> m_vbTracks_vec;
   std::vector<TLorentzVector> m_photonTracks_vec;
   
