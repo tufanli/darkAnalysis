@@ -16,6 +16,7 @@
 #include "TBits.h"
 
 #include <iostream>
+#include <stdlib.h>
 using std::cout;
 using std::endl;
 
@@ -72,7 +73,7 @@ TFile *darkSectorUtilities::createSingleFluxFile(const char *inputRootFileName, 
       event = new darkSectorEvent();
       Long64_t idFile = createIdFromFileName(inputRootFileName);
       Long64_t number = idFile+i+1;
-      std::cout << idFile << ", " << number << std::endl;
+      //      std::cout << idFile << ", " << number << std::endl;
       event->setEventId(number);
       event->setEventFileNumber(idFile);
       event->setEventMultiplicity(nmult);
@@ -130,12 +131,11 @@ TFile *darkSectorUtilities::createFluxFile(const char *dirName,
       TFile *output = new TFile(outputRootFileName,"RECREATE");
       TTree *treeOut = new TTree("tree","darkSectorEvents");
       darkSectorEvent *event=0;
-      float pot=0,potInteract=0;
       treeOut->Branch("event","darkSectorEvent",&event,32000,2);
 
       TTree *treePOT = new TTree("POT","POT");
-      treePOT->Branch("POT",&pot);
-      treePOT->Branch("POT_int",&potInteract);
+      Long64_t pot=0;
+      treePOT->Branch("pot",&pot,"pot/LL");
 
       treeOut->SetDirectory(output);
       treeOut->BranchRef();
@@ -143,11 +143,9 @@ TFile *darkSectorUtilities::createFluxFile(const char *dirName,
       while ((file=(TSystemFile*)next())) 
 	{
 	  fname = file->GetName();
-	  std::cout << fname<< std::endl;
+	  //	  std::cout << fname<< std::endl;
 	  if (!file->IsDirectory() && fname.Contains(ext)&&fname.Contains(".root")) 
 	    {	      
-	      pot+=1000;
-
 	      TString dene;
 	      const char *rootFile = fname;
 
@@ -167,8 +165,8 @@ TFile *darkSectorUtilities::createFluxFile(const char *dirName,
 	      t->SetBranchAddress("id",&id);
 	      t->SetBranchAddress("mom",&mom);
 
-	      potInteract+=t->GetEntries();
-
+	      pot+=t->GetEntries();
+	      //	      cout << "POT = " << pot << endl;
 	      for(Long64_t i=0;i<t->GetEntries();i++)
 		//	      for(Long64_t i=0;i<100000;i++)
 		{
@@ -180,7 +178,6 @@ TFile *darkSectorUtilities::createFluxFile(const char *dirName,
 		  event->setEventId(number);
 		  event->setEventFileNumber(idFile);
 		  event->setEventMultiplicity(nmult);
-		  //		  event->setPOT(1000);
 
 		  darkSectorTrack *track =0;
 		  for(Int_t j=0;j<nmult;j++)
@@ -190,7 +187,7 @@ TFile *darkSectorUtilities::createFluxFile(const char *dirName,
 		      track->setTrackEventFileId(idFile);
 		      unsigned int forTrackId = number*100+1+j;
 		      track->setTrackId(forTrackId);
-		      std::cout << idFile << ", " << number << ", " << forTrackId<< std::endl;
+		      //std::cout << idFile << ", " << number << ", " << forTrackId<< std::endl;
 		      track->setTrackPDG(id[j]);
 		      track->setTrackPx(mom[j][0]);
 		      track->setTrackPy(mom[j][1]);
@@ -246,6 +243,12 @@ TFile *darkSectorUtilities::createSinglePiFluxFile(const char *inputRootFileName
 
   TTree *treeOut = new TTree(isim,"darkSectorPion");
   treeOut->Branch(isim,"darkSectorTrack",&darkTrack,32000,1);
+
+  TTree *treePOT = new TTree("POT","POT");
+  Long64_t pot=0;
+  treePOT->Branch("pot",&pot,"pot/LL");
+  pot=tr->GetEntries();
+
   treeOut->SetDirectory(output);
   treeOut->BranchRef();
   
@@ -288,6 +291,10 @@ TFile *darkSectorUtilities::createPi0File(const char *inputRootFileName,
   treeOut->Branch("treePi0","darkSectorTrack",&darkTrack,32000,1);
   treeOut->SetDirectory(output);
   treeOut->BranchRef();
+
+  TTree *potIn = (TTree *)input->Get("POT");
+  TTree *potOut = potIn->CloneTree();
+  //  potOut->Write();
 
   Int_t countPiMinus=0,countPiPlus=0; // more events in this case  
   for(Long64_t i=0;i<tr->GetEntries();i++)
@@ -339,6 +346,9 @@ TFile *darkSectorUtilities::createMesonFile(const char *inputRootFileName,
   treeOut->Branch("treeMeson","darkSectorMeson",&meson,32000,1);
   treeOut->SetDirectory(output);
   treeOut->BranchRef();
+
+  TTree *potIn = (TTree *)input->Get("POT");
+  TTree *potOut = potIn->CloneTree();
 
   Float_t fakeMass[5] = {0.54785,0.77526,0.78265,0.95778,1.019461};
 
@@ -400,72 +410,14 @@ TFile *darkSectorUtilities::createMesonFile(const char *inputRootFileName,
   output->Close();
 }
 
-darkSectorMeson *darkSectorUtilities::generateMeson(darkSectorTrack *track)
+void darkSectorUtilities::createFluxFromMesonFile(const char*inputRootFileName, 
+						   const char *treeName, 
+						   const char *outputRootFileName)
 {
-  //  std::cout << __PRETTY_FUNCTION__ << std::endl;
-  darkSectorMeson *me= new darkSectorMeson();
+  // *** this piece of code creates mesonFlux.root by combining 
+  // *** mesons randomly with ratios from the paper 
+  // *** arxiv 1405.7049v1 --> Leptophobic Dark Matter at Neutrino Factories, Table I
 
-  Float_t fakeMass[5] = {0.54785,0.77526,0.78265,0.95778,1.019461};
-
-  // ### Looping over all the "fake" particles we are trying to create
-  for(const auto& fM : fakeMass)
-    {
-      // ### Grabbing the Pi0 3-momentum ###
-      float pi0Momentum = track->getTrackMomentum();
-      
-      // ### Calculating the Pi0 (inferred) energy ###
-      float iE = TMath::Sqrt(0.139*0.139+pi0Momentum*pi0Momentum);
-
-      me->setMesonMass(fM);
-      me->setTrackEventId(track->getTrackEventId());
-      me->setTrackEventFileId(track->getTrackEventFileId());
-      me->setTrackId(track->getTrackId());
-      
-      if((iE*iE)>(fM*fM))
-	{
-	  // ### The new 3-momentum of the meson is sqrt(E^2 - m^2)
-	  Float_t fakePnew = TMath::Sqrt((iE*iE)-(fM*fM)); // meson 3-momentum
-	  me->setTrackMomentum(fakePnew);
-	  me->setMesonEnergy(iE);
-	  me->setMesonInvMass(fM);
-
-	  // ### Assigning meson component momentum (e.g. px, py, pz)  ###
-	  // ### in a similar ratio as original pi0 component momentum ###
-	  Float_t fakePx = (fakePnew*track->getTrackPx())/pi0Momentum; 
-	  Float_t fakePy = (fakePnew*track->getTrackPy())/pi0Momentum;
-	  Float_t fakePz = (fakePnew*track->getTrackPz())/pi0Momentum;
-	  Float_t fakePt = TMath::Sqrt(fakePx*fakePx + fakePy*fakePy);
-
-	  me->setTrackPx(fakePx); 
-	  me->setTrackPy(fakePy);
-	  me->setTrackPz(fakePz);
-	  me->setTrackPt(fakePt);
-
-	  Int_t id; // meson pdg id
-	  if (fM == fakeMass[0]){ id = 221; } //<---Eta
-	  if (fM == fakeMass[1]){ id = 223; } //<---Omega
-	  if (fM == fakeMass[2]){ id = 113; } //<---Rho
-	  if (fM == fakeMass[3]){ id = 331; } //<---Eta-prime
-	  if (fM == fakeMass[4]){ id = 333; } //<---phi
-	  me->setTrackPDG(id);
-	}
-      else
-	{
-	  me->setTrackMomentum(0);
-	  me->setMesonEnergy(0);
-	  me->setTrackPx(0); 
-	  me->setTrackPy(0);
-	  me->setTrackPz(0);
-	  me->setTrackPt(0);
-	  me->setTrackPDG(0);
-	  me->setMesonInvMass(0);
-	}
-    }
-  return me; // returns also the cases where energy is not enough to create meson, which in that case everything is set to 0.
-}
-
-void darkSectorUtilities::setMesonProductionRatios(const char*inputRootFileName, const char *treeName)
-{
   TFile *input = new TFile(inputRootFileName);
   TTree *tr = (TTree *)input->Get(treeName);
   
@@ -477,8 +429,11 @@ void darkSectorUtilities::setMesonProductionRatios(const char*inputRootFileName,
   TBranch *id = tr->GetBranch("treeMeson");
   id->SetAddress(&meson);
 
-  TFile deneme("deneme.root","update");  
+  TFile *output = new TFile(outputRootFileName,"UPDATE");
   TTree *treeOut = new TTree("treeMeson","darkSectorMeson");
+
+  TTree *potIn = (TTree *)input->Get("POT");
+  TTree *potOut = potIn->CloneTree();
 
   Int_t pdgNumbers[5] = {221,223,113,331,333};
   // *** arxiv 1405.7049v1 --> Leptophobic Dark Matter at Neutrino Factories, Table I
@@ -499,17 +454,15 @@ void darkSectorUtilities::setMesonProductionRatios(const char*inputRootFileName,
       counter++;
       delete particleTree;
     }
-  treeOut->Write();
+  //  treeOut->Write();
+  output->cd();
+  output->Write();
 }
 
-TFile *darkSectorUtilities::createVBFile(const char *inputRootFileName, 
+TFile *darkSectorUtilities::createMediatorFile(const char *inputRootFileName, 
 					 const char *treeName, 
 					 const char *outputRootFileName)
 {
-  // *** sonucta cikan VB ve photon un lab frame deki bilgileri lazim bize
-  // *** TLorantzVector yeterli --> px,py,pz,E ve mass lazim
-  // *** ek olarak mass ve invmass da ekle
-
   TFile *input = new TFile(inputRootFileName);
   TTree *tr = (TTree *)input->Get(treeName);
   
@@ -524,9 +477,14 @@ TFile *darkSectorUtilities::createVBFile(const char *inputRootFileName,
   treeOut->SetDirectory(output);
   treeOut->BranchRef();
 
-  for(size_t i=0;i<tr->GetEntries();i++) // *** meson track loop
-    //for(size_t i=0;i<300;i++)
-    {           
+  TTree *potIn = (TTree *)input->Get("POT");
+  TTree *potOut = potIn->CloneTree();
+  
+  for(Long64_t i=0;i<tr->GetEntries();i++) // *** meson track loop
+    //for(Long64_t i=0;i<300;i++)
+    {   
+      //      cout << endl;
+
       id->GetEntry(i);
 
       TLorentzVector mesonLabFrame,mesonLabFrameToBoost; // initialized by (0., 0., 0., 0.)
@@ -557,6 +515,8 @@ TFile *darkSectorUtilities::createVBFile(const char *inputRootFileName,
       Double_t mrfinv = mesonCenterOfMass.Mag(); // meson rest frame invariant mesonMass
 
       vb=new darkSectorVB();        
+
+      // *** parent meson track info for the VB
       vb->setTrackEventId(meson->getTrackEventId());
       vb->setTrackEventFileId(meson->getTrackEventFileId());
       vb->setTrackId(meson->getTrackId());
@@ -565,14 +525,16 @@ TFile *darkSectorUtilities::createVBFile(const char *inputRootFileName,
       vb->setTrackPy(meson->getTrackPy());
       vb->setTrackPz(meson->getTrackPz());
       vb->setTrackMomentum(meson->getTrackMomentum());
-      vb->setInvMassLabFrame(mlfinv);
-      vb->setInvMassCenterOfMass(mrfinv);
-          
+      vb->setInvMass(mlfinv);
+    
+      std::vector<TLorentzVector *> vectorToSelectBoson;
+      std::vector<TLorentzVector *> vectorToSelectPhoton;
+
       for(float m = 0.140; m<0.630; m+=0.010) // vector boson masses
-	{	      
+	{
 	  // *** decay generator
 	  TGenPhaseSpace mesonDecay;
-
+	  
 	  if(meson->getMesonMass()>m)
 	    {
 	      Double_t masses[2] = {m,0.0}; // meson decays to vector boson with mass m and photon
@@ -585,9 +547,13 @@ TFile *darkSectorUtilities::createVBFile(const char *inputRootFileName,
 		  TLorentzVector *vectorBoson= mesonDecay.GetDecay(0);	  // vb
 		  TLorentzVector *initialPhoton = mesonDecay.GetDecay(1); // photon
 
-		  vb->addVBVec(*vectorBoson);
-		  vb->addPhotonVec(*initialPhoton);
+		  // *** saves all the possible VBs and initial photons
+		  // vb->addVBVec(*vectorBoson);
+		  // vb->addPhotonVec(*initialPhoton);
 		  
+		  vectorToSelectBoson.push_back(vectorBoson);
+		  vectorToSelectPhoton.push_back(initialPhoton);
+
 		  vectorBoson=0;
 		  initialPhoton=0;
 		  delete vectorBoson;
@@ -599,19 +565,50 @@ TFile *darkSectorUtilities::createVBFile(const char *inputRootFileName,
 		  TLorentzVector *vectorBoson = new TLorentzVector(0.,0.,0.,0.);	  
 		  TLorentzVector *initialPhoton = new TLorentzVector(0.,0.,0.,0.);	  
 		  vectorBoson->SetPxPyPzE(meson->getTrackPx(),meson->getTrackPy(),meson->getTrackPz(),vectorBosonEnergy);
+		  
+		  // *** saves all the possible VBs and initial photons
+		  // vb->addVBVec(*vectorBoson);
+		  // vb->addPhotonVec(*initialPhoton);
 
-		  vb->addVBVec(*vectorBoson);
-		  vb->addPhotonVec(*initialPhoton);
+		  vectorToSelectBoson.push_back(vectorBoson);
+		  vectorToSelectPhoton.push_back(initialPhoton);
+
 		  vectorBoson=0;
 		  initialPhoton=0;
 		  delete vectorBoson;
 		  delete initialPhoton;
 		}
 	    } // *** if meson mass > ..
+	  else
+	    cout << "m is bigger than meson mass " <<meson->getMesonMass() << ", "<< m << endl;
 	}// *** for m
+
+      int randomIndex = rand()% vectorToSelectBoson.size();
+      // *** saves randomly selected VB and initial photon
+      vb->addVBVec(*vectorToSelectBoson.at(randomIndex));
+      vb->addPhotonVec(*vectorToSelectPhoton.at(randomIndex));
+
+      Float_t sbndDet=2.0/110.0;
+      Float_t ubooneDet=1.25/470.0;
+      Float_t icarusDet=3.6/600.0;
+      Float_t mediatorSx = TMath::Abs(vectorToSelectBoson[randomIndex]->Px()/vectorToSelectBoson[randomIndex]->Pz());
+      Float_t mediatorSy = TMath::Abs(vectorToSelectBoson[randomIndex]->Py()/vectorToSelectBoson[randomIndex]->Pz());
+
+      TRandom3 aa;
+      aa.SetSeed(i);
+      Int_t randNum=aa.Uniform(0,vectorToSelectBoson.size());
+
+      if(mediatorSx < sbndDet && mediatorSy < sbndDet) 
+	vb->setMediatorInterceptSBND(1);
+      if(mediatorSx < ubooneDet && mediatorSy < ubooneDet) 
+	vb->setMediatorInterceptUBOONE(1);
+      if(mediatorSx < icarusDet && mediatorSy < icarusDet) 
+	vb->setMediatorInterceptICARUS(1);
+
       treeOut->Fill();
       delete vb;
-    }
+    } // event loop
+
   output->cd();
   output->Write();
   output->Close();
@@ -630,8 +627,7 @@ TFile *darkSectorUtilities::createDecayFile(const char *inputRootFileName,
   // darkSectorMeson *meson=0;  
   darkSectorVB *vb=0;
   
-  
-  // ### Doing this a dumb way for now.....####
+    // ### Doing this a dumb way for now.....####
   // ### need to write a function that does this cleaner ###
   darkSectorFinalState *fs=0;
     
@@ -647,6 +643,9 @@ TFile *darkSectorUtilities::createDecayFile(const char *inputRootFileName,
   treeOut->Branch("treeVBDecay","darkSectorFinalState",&fs,32000,1);
   treeOut->SetDirectory(output);
   treeOut->BranchRef();
+
+  TTree *potIn = (TTree *)input->Get("POT");
+  TTree *potOut = potIn->CloneTree();
   
   TLorentzVector TempPi0, TempPhoton0, TempPhoton1, TempPhoton2;
   TLorentzVector Temp;
@@ -662,7 +661,7 @@ TFile *darkSectorUtilities::createDecayFile(const char *inputRootFileName,
       
       std::vector<TLorentzVector> vbTemp = vb->vectorBosonsVec();
       
-      for (size_t a = 0; a < vbTemp.size(); a++)
+      for (Long64_t a = 0; a < vbTemp.size(); a++)
       	{
 	  std::cout<<"Px = "<<vbTemp[a].Px()<<std::endl;
 	  // ### Filling a temporary Lorentz Vector ###
@@ -785,7 +784,7 @@ TTree *createMesonFlux(TTree *tree,Int_t N, TTree *treeOut)
   treeOut->Branch("treeMeson","darkSectorMeson",&meson2,32000,1);
 
   Int_t fbit = 0;
-  for (i=0;i<N;i++) 
+  for (int cnt=0;cnt<N;cnt++) 
     {
       Int_t j = bits->FirstSetBit(fbit);
       id->GetEntry(j);      

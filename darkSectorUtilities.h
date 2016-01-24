@@ -42,19 +42,20 @@ class darkSectorUtilities : public TObject
 			      const char *outputRootFileName);
 
   // *** step-3: create meson file
+  // this file is without any weighting, 5 meson(eta, rho ,...) for each pi0
   static TFile *createMesonFile(const char *inputRootFileName, 
 				const char *treeName, 
 				const char *outputRootFileName);
-  // I don't use it but it is a nice function
-  static darkSectorMeson *generateMeson(darkSectorTrack *track);
-  static void setMesonProductionRatios(const char*inputRootFileName,
-				       const char*treeName);
+  // this is the function to create flux meson file. It uses output of createMesonFile
+  static void createFluxFromMesonFile(const char *inputRootFileName,
+				       const char *treeName,
+					const char *outputRootName);
 
   // *** step-4: create VB file
-  static TFile *createVBFile(const char *inputRootFileName, 
+  // *** mediator interception with detectors are also in the function
+  static TFile *createMediatorFile(const char *inputRootFileName, 
 			     const char *treeName, 
 			     const char *outputRootFileName);
-
 
   // *** step-5: create decay file
   static TFile *createDecayFile(const char *inputRootFileName, 
@@ -62,9 +63,8 @@ class darkSectorUtilities : public TObject
 				const char *outputRootFileName);
 
 
-  // *** convert to HEP format
-  // *** convert Brooke's output to HEP format
-  // *** corsica, cry and geant
+  // *** step-7: convert to HEP format
+
 
 
   // *** simple print utilities to get event and track information
