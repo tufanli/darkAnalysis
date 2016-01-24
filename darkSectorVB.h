@@ -20,38 +20,32 @@ class darkSectorVB : public darkSectorTrack
   virtual ~darkSectorVB();
   
   // *** setters
-  Float_t setInvMassLabFrame(Float_t invmass){m_vbInvMassLab=invmass;}
-  Float_t setInvMassCenterOfMass(Float_t invmass){m_vbInvMassCM=invmass;}
-  
+  Float_t setInvMass(Float_t invmass){m_vbInvMass=invmass;}
+  Int_t setMediatorInterceptSBND(Int_t inter){m_vbInterceptSBND=inter;}
+  Int_t setMediatorInterceptUBOONE(Int_t inter){m_vbInterceptUBOONE=inter;}
+  Int_t setMediatorInterceptICARUS(Int_t inter){m_vbInterceptICARUS=inter;}
+
   // *** getters
-  Float_t getInvMassLabFrame(){return m_vbInvMassLab;}
-  Float_t getInvMassCenterOfMass(){return m_vbInvMassCM;}
-  
-  // *** useful functions
-  // TObjArray *vectorBosons() {return m_vbTracks;} // all vb tracks
-  // TObjArray *initialPhotons() {return m_photonTracks;} // all photon tracks
-  
-  // TClonesArray *vectorBosons() {return m_vbTracks;} // all vb tracks
-  // TClonesArray *initialPhotons() {return m_photonTracks;} // all photon tracks
-  
+  Float_t getInvMass(){return m_vbInvMass;}
+  Int_t getMediatorInterceptSBND(){return m_vbInterceptSBND;}
+  Int_t getMediatorInterceptUBOONE(){return m_vbInterceptUBOONE;}
+  Int_t getMediatorInterceptICARUS(){return m_vbInterceptICARUS;}
+
+  // *** all possible VB and initial photons
   std::vector<TLorentzVector> vectorBosonsVec(){return m_vbTracks_vec;}
   std::vector<TLorentzVector> initialPhotonsVec(){return m_photonTracks_vec;}
-  
   void addVBVec(const TLorentzVector track);
   void addPhotonVec(const TLorentzVector track);
 
  protected:
-  Float_t m_vbInvMassLab;
-  Float_t m_vbInvMassCM;
-  // TObjArray *m_vbTracks;
-  // TObjArray *m_photonTracks;
-  
-  // TClonesArray *m_vbTracks;
-  // TClonesArray *m_photonTracks;
+  Float_t m_vbInvMass;
+  Int_t m_vbInterceptSBND;
+  Int_t m_vbInterceptUBOONE;
+  Int_t m_vbInterceptICARUS;
 
   std::vector<TLorentzVector> m_vbTracks_vec;
   std::vector<TLorentzVector> m_photonTracks_vec;
-  
+
  public:
   ClassDef(darkSectorVB,1);
 };
