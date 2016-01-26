@@ -16,7 +16,7 @@
 #include "TBits.h"
 
 #include <iostream>
-#include <stdlib.h>
+
 using std::cout;
 using std::endl;
 
@@ -64,7 +64,7 @@ TFile *darkSectorUtilities::createSingleFluxFile(const char *inputRootFileName, 
   t->SetBranchAddress("id",&id);
   t->SetBranchAddress("mom",&mom);
 
-  std::cout << t->GetEntries()<< std::endl;
+  //  std::cout << t->GetEntries()<< std::endl;
 
   for(Long64_t i=0;i<t->GetEntries();i++)
     {
@@ -411,8 +411,8 @@ TFile *darkSectorUtilities::createMesonFile(const char *inputRootFileName,
 }
 
 void darkSectorUtilities::createFluxFromMesonFile(const char*inputRootFileName, 
-						   const char *treeName, 
-						   const char *outputRootFileName)
+						  const char *treeName, 
+						  const char *outputRootFileName)
 {
   // *** this piece of code creates mesonFlux.root by combining 
   // *** mesons randomly with ratios from the paper 
@@ -454,14 +454,13 @@ void darkSectorUtilities::createFluxFromMesonFile(const char*inputRootFileName,
       counter++;
       delete particleTree;
     }
-  //  treeOut->Write();
   output->cd();
   output->Write();
 }
 
 TFile *darkSectorUtilities::createMediatorFile(const char *inputRootFileName, 
-					 const char *treeName, 
-					 const char *outputRootFileName)
+					       const char *treeName, 
+					       const char *outputRootFileName)
 {
   TFile *input = new TFile(inputRootFileName);
   TTree *tr = (TTree *)input->Get(treeName);
@@ -479,14 +478,15 @@ TFile *darkSectorUtilities::createMediatorFile(const char *inputRootFileName,
 
   TTree *potIn = (TTree *)input->Get("POT");
   TTree *potOut = potIn->CloneTree();
-  
+
+  TRandom3 randomGenerator;
+  randomGenerator.SetSeed(0);
+
   for(Long64_t i=0;i<tr->GetEntries();i++) // *** meson track loop
     //for(Long64_t i=0;i<300;i++)
     {   
-      //      cout << endl;
-
       id->GetEntry(i);
-
+      
       TLorentzVector mesonLabFrame,mesonLabFrameToBoost; // initialized by (0., 0., 0., 0.)
       mesonLabFrameToBoost.SetPxPyPzE(meson->getTrackPx(),
 				      meson->getTrackPy(),
@@ -527,10 +527,11 @@ TFile *darkSectorUtilities::createMediatorFile(const char *inputRootFileName,
       vb->setTrackMomentum(meson->getTrackMomentum());
       vb->setInvMass(mlfinv);
     
-      std::vector<TLorentzVector *> vectorToSelectBoson;
-      std::vector<TLorentzVector *> vectorToSelectPhoton;
-
-      for(float m = 0.140; m<0.630; m+=0.010) // vector boson masses
+      std::vector<TLorentzVector*> vectorToSelectBoson;
+      std::vector<TLorentzVector*> vectorToSelectPhoton;
+      
+      //      for(float m = 0.140; m<0.630; m+=0.010) // vector boson masses
+      for(float m = 0.140; m<1.1; m+=0.010) // vector boson masses
 	{
 	  // *** decay generator
 	  TGenPhaseSpace mesonDecay;
@@ -538,21 +539,23 @@ TFile *darkSectorUtilities::createMediatorFile(const char *inputRootFileName,
 	  if(meson->getMesonMass()>m)
 	    {
 	      Double_t masses[2] = {m,0.0}; // meson decays to vector boson with mass m and photon
-
 	      // *** eta and eta-prime --> decay in flight
 	      if (meson->getTrackPDG() == 221 || meson->getTrackPDG() == 331)
 		{
 		  mesonDecay.SetDecay(mesonLabFrame,2,masses);
 		  mesonDecay.Generate(); // !!!! generate 1 random possible final state
-		  TLorentzVector *vectorBoson= mesonDecay.GetDecay(0);	  // vb
+		  TLorentzVector *vectorBoson=  mesonDecay.GetDecay(0);	  // vb
 		  TLorentzVector *initialPhoton = mesonDecay.GetDecay(1); // photon
 
-		  // *** saves all the possible VBs and initial photons
-		  // vb->addVBVec(*vectorBoson);
-		  // vb->addPhotonVec(*initialPhoton);
-		  
-		  vectorToSelectBoson.push_back(vectorBoson);
-		  vectorToSelectPhoton.push_back(initialPhoton);
+		  // *** I dont know why not simly possible to save vectorBoson and initialPhoton 
+		  // *** instead of creating new TLorentzVectors ...
+		  TLorentzVector *Idontknow= new TLorentzVector(0.,0.,0.,0.);
+		  Idontknow->SetPxPyPzE(vectorBoson->Px(), vectorBoson->Py(), vectorBoson->Pz(), vectorBoson->Energy());
+		  TLorentzVector *IdontknowPhoton= new TLorentzVector(0.,0.,0.,0.);
+		  IdontknowPhoton->SetPxPyPzE(initialPhoton->Px(), initialPhoton->Py(), initialPhoton->Pz(), initialPhoton->Energy());
+
+		  vectorToSelectBoson.push_back(Idontknow);
+		  vectorToSelectPhoton.push_back(IdontknowPhoton);
 
 		  vectorBoson=0;
 		  initialPhoton=0;
@@ -561,11 +564,12 @@ TFile *darkSectorUtilities::createMediatorFile(const char *inputRootFileName,
 		}
 	      else
 		{
+		  Double_t masses[2] = {m,0.0}; // meson decays to vector boson with mass m and photon
 		  Float_t vectorBosonEnergy = TMath::Sqrt(meson->getTrackMomentum()*meson->getTrackMomentum() + m*m);
 		  TLorentzVector *vectorBoson = new TLorentzVector(0.,0.,0.,0.);	  
 		  TLorentzVector *initialPhoton = new TLorentzVector(0.,0.,0.,0.);	  
 		  vectorBoson->SetPxPyPzE(meson->getTrackPx(),meson->getTrackPy(),meson->getTrackPz(),vectorBosonEnergy);
-		  
+
 		  // *** saves all the possible VBs and initial photons
 		  // vb->addVBVec(*vectorBoson);
 		  // vb->addPhotonVec(*initialPhoton);
@@ -578,37 +582,32 @@ TFile *darkSectorUtilities::createMediatorFile(const char *inputRootFileName,
 		  delete vectorBoson;
 		  delete initialPhoton;
 		}
-	    } // *** if meson mass > ..
+	    } // *** if meson mass > ..       
 	  else
-	    cout << "m is bigger than meson mass " <<meson->getMesonMass() << ", "<< m << endl;
+	    continue;
 	}// *** for m
 
-      int randomIndex = rand()% vectorToSelectBoson.size();
-      // *** saves randomly selected VB and initial photon
-      vb->addVBVec(*vectorToSelectBoson.at(randomIndex));
-      vb->addPhotonVec(*vectorToSelectPhoton.at(randomIndex));
+	Int_t randNum=randomGenerator.Uniform(0,vectorToSelectBoson.size());
+	vb->addVBVec(*vectorToSelectBoson.at(randNum));
+	vb->addPhotonVec(*vectorToSelectPhoton.at(randNum));
 
-      Float_t sbndDet=2.0/110.0;
-      Float_t ubooneDet=1.25/470.0;
-      Float_t icarusDet=3.6/600.0;
-      Float_t mediatorSx = TMath::Abs(vectorToSelectBoson[randomIndex]->Px()/vectorToSelectBoson[randomIndex]->Pz());
-      Float_t mediatorSy = TMath::Abs(vectorToSelectBoson[randomIndex]->Py()/vectorToSelectBoson[randomIndex]->Pz());
+	Float_t sbndDet=2.83/110.0;
+	Float_t ubooneDet=1.77/470.0;
+	Float_t icarusDet=5.31/600.0;
+	
+	if(vectorToSelectBoson.at(randNum)->Theta()<sbndDet) 
+	  vb->setMediatorInterceptSBND(1);
 
-      TRandom3 aa;
-      aa.SetSeed(i);
-      Int_t randNum=aa.Uniform(0,vectorToSelectBoson.size());
+	if(vectorToSelectBoson.at(randNum)->Theta()<ubooneDet) 
+	  vb->setMediatorInterceptUBOONE(1);
 
-      if(mediatorSx < sbndDet && mediatorSy < sbndDet) 
-	vb->setMediatorInterceptSBND(1);
-      if(mediatorSx < ubooneDet && mediatorSy < ubooneDet) 
-	vb->setMediatorInterceptUBOONE(1);
-      if(mediatorSx < icarusDet && mediatorSy < icarusDet) 
-	vb->setMediatorInterceptICARUS(1);
-
-      treeOut->Fill();
-      delete vb;
+	if(vectorToSelectBoson.at(randNum)->Theta()<icarusDet) 
+	  vb->setMediatorInterceptICARUS(1);      
+	
+	treeOut->Fill();
+	delete vb;
     } // event loop
-
+  
   output->cd();
   output->Write();
   output->Close();
@@ -627,7 +626,7 @@ TFile *darkSectorUtilities::createDecayFile(const char *inputRootFileName,
   // darkSectorMeson *meson=0;  
   darkSectorVB *vb=0;
   
-    // ### Doing this a dumb way for now.....####
+  // ### Doing this a dumb way for now.....####
   // ### need to write a function that does this cleaner ###
   darkSectorFinalState *fs=0;
     
