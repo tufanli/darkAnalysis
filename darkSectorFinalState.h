@@ -15,8 +15,8 @@ public:
 	virtual ~darkSectorFinalState();
 	
 	// ### Setters ###
-	Float_t setFSPEnergy(Float_t en){m_trEnergy = en;}
-	Float_t setFSPInvMass(Float_t massIn){m_trInvMass = massIn;}
+	void setFSPEnergy(Float_t en){m_trEnergy = en;}
+	void setFSPInvMass(Float_t massIn){m_trInvMass = massIn;}
 	
 	// ### Getters ###
 	Float_t getFSPEnergy(){return m_trEnergy;}

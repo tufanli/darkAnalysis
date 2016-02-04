@@ -20,10 +20,10 @@ class darkSectorVB : public darkSectorTrack
   virtual ~darkSectorVB();
   
   // *** setters
-  Float_t setInvMass(Float_t invmass){m_vbInvMass=invmass;}
-  Int_t setMediatorInterceptSBND(Int_t inter){m_vbInterceptSBND=inter;}
-  Int_t setMediatorInterceptUBOONE(Int_t inter){m_vbInterceptUBOONE=inter;}
-  Int_t setMediatorInterceptICARUS(Int_t inter){m_vbInterceptICARUS=inter;}
+  void setInvMass(Float_t invmass){m_vbInvMass=invmass;}
+  void setMediatorInterceptSBND(Int_t inter){m_vbInterceptSBND=inter;}
+  void setMediatorInterceptUBOONE(Int_t inter){m_vbInterceptUBOONE=inter;}
+  void setMediatorInterceptICARUS(Int_t inter){m_vbInterceptICARUS=inter;}
 
   // *** getters
   Float_t getInvMass(){return m_vbInvMass;}

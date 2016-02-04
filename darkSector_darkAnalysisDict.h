@@ -32,6 +32,7 @@ extern void G__set_cpp_environmentdarkSector_darkAnalysisDict();
 #include "TObject.h"
 #include "TMemberInspector.h"
 #include "darkSectorEvent.h"
+#include "darkSectorFinalState.h"
 #include "darkSectorMeson.h"
 #include "darkSectorTrack.h"
 #include "darkSectorUtilities.h"
@@ -55,8 +56,8 @@ extern G__linked_taginfo G__darkSector_darkAnalysisDictLN_reverse_iteratorlEvect
 extern G__linked_taginfo G__darkSector_darkAnalysisDictLN_iteratorlEbidirectional_iterator_tagcOTObjectmUcOlongcOconstsPTObjectmUmUcOconstsPTObjectmUaNgR;
 extern G__linked_taginfo G__darkSector_darkAnalysisDictLN_darkSectorTrack;
 extern G__linked_taginfo G__darkSector_darkAnalysisDictLN_darkSectorEvent;
+extern G__linked_taginfo G__darkSector_darkAnalysisDictLN_darkSectorFinalState;
 extern G__linked_taginfo G__darkSector_darkAnalysisDictLN_darkSectorMeson;
-extern G__linked_taginfo G__darkSector_darkAnalysisDictLN_TFile;
 extern G__linked_taginfo G__darkSector_darkAnalysisDictLN_maplEstringcOTObjArraymUcOlesslEstringgRcOallocatorlEpairlEconstsPstringcOTObjArraymUgRsPgRsPgR;
 extern G__linked_taginfo G__darkSector_darkAnalysisDictLN_darkSectorVB;
 extern G__linked_taginfo G__darkSector_darkAnalysisDictLN_darkSectorUtilities;

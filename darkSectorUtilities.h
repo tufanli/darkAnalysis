@@ -21,29 +21,29 @@ class darkSectorUtilities : public TObject
   virtual ~darkSectorUtilities();
   
   // *** step-1: convert simulation root files (uboone*.root) or Flux.root to "darkSector" class object and save them into let say "simulatedFlux.root" file
-  static TFile *createSingleFluxFile(const char *inputRootFileName, 
+  static void createSingleFluxFile(const char *inputRootFileName, 
 				     const char *treeName, 
 				     const char *outputRootFileName);
 
   // cok buyuk dosyada birden fazla ttree olusturuyou AutoSave den!!!
-  static TFile *createFluxFile(const char *dirName, 
+  static void createFluxFile(const char *dirName, 
 			       const char *ext, 
 			       const char *treeName, 
 			       const char *outputRootFileName);
     
   // *** step-2: create pi+/pi-/pi0 flux file from "simulatedFlux.root" and save into let say "simulatedPionFlux.root"
-  static TFile *createSinglePiFluxFile(const char *inputRootFileName, 
+  static void createSinglePiFluxFile(const char *inputRootFileName, 
 				       const char *treeName, 
 				       const char *outputRootFileName,
 				       Int_t pdg);
 
-  static TFile *createPi0File(const char *inputRootFileName, 
+  static void createPi0File(const char *inputRootFileName, 
 			      const char *treeName, 
 			      const char *outputRootFileName);
 
   // *** step-3: create meson file
   // this file is without any weighting, 5 meson(eta, rho ,...) for each pi0
-  static TFile *createMesonFile(const char *inputRootFileName, 
+  static void createMesonFile(const char *inputRootFileName, 
 				const char *treeName, 
 				const char *outputRootFileName);
   // this is the function to create flux meson file. It uses output of createMesonFile
@@ -51,19 +51,24 @@ class darkSectorUtilities : public TObject
 				       const char *treeName,
 					const char *outputRootName);
 
+  // ---> Branching ratio Tulin paper 4370
+
   // *** step-4: create VB file
   // *** mediator interception with detectors are also in the function
-  static TFile *createMediatorFile(const char *inputRootFileName, 
+  static void createMediatorFile(const char *inputRootFileName, 
 			     const char *treeName, 
 			     const char *outputRootFileName);
 
-  // *** step-5: create decay file
-  static TFile *createDecayFile(const char *inputRootFileName, 
+  // *** step-5: create decay file --> Jonathan
+
+  // ---> probablity of decay
+  // ---> decay position,
+  static void createDecayFile(const char *inputRootFileName, 
 				const char *treeName, 
 				const char *outputRootFileName);
 
 
-  // *** step-7: convert to HEP format
+  // *** step-6: convert to HEP format
 
 
 

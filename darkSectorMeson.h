@@ -17,9 +17,9 @@ class darkSectorMeson : public darkSectorTrack
 	virtual ~darkSectorMeson();
 
 	// *** setters
-	Float_t setMesonEnergy(Float_t en){m_trEnergy = en;}
-	Float_t setMesonMass(Float_t mass){m_trMass = mass;}
-	Float_t setMesonInvMass(Float_t massIn){m_trInvMass = massIn;}
+	void setMesonEnergy(Float_t en){m_trEnergy = en;}
+	void setMesonMass(Float_t mass){m_trMass = mass;}
+	void setMesonInvMass(Float_t massIn){m_trInvMass = massIn;}
 
 	// *** getters
 	Float_t getMesonEnergy(){return m_trEnergy;}

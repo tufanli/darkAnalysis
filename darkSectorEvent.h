@@ -19,9 +19,9 @@ class darkSectorEvent : public TObject
 	virtual ~darkSectorEvent();
 
 	// *** setters
-	Long64_t setEventId(Long64_t Id){m_evId=Id;}
-	Long64_t setEventFileNumber(Long64_t number){m_evFileNumber=number;}
-	Int_t setEventMultiplicity(Int_t multiplicity){m_evMultiplicity=multiplicity;}
+	void setEventId(Long64_t Id){m_evId=Id;}
+	void setEventFileNumber(Long64_t number){m_evFileNumber=number;}
+	void setEventMultiplicity(Int_t multiplicity){m_evMultiplicity=multiplicity;}
 
 	// *** getters
 	Long64_t getEventId(){return m_evId;}

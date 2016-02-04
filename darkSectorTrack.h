@@ -16,15 +16,15 @@ class darkSectorTrack : public TObject
 	virtual ~darkSectorTrack();
 
 	// *** setters
-	Long64_t setTrackEventId(Long64_t id){m_trEventId=id;}
-	Long64_t setTrackEventFileId(Long64_t file){m_trEventFileId=file;}
-	Int_t setTrackId(Int_t id){m_trId = id;}
-	Int_t setTrackPDG(Int_t pdg){m_trPDG = pdg;}
-	Float_t setTrackPx(Float_t Px){m_trPx = Px;}
-	Float_t setTrackPy(Float_t Py){m_trPy = Py;}
-	Float_t setTrackPz(Float_t Pz){m_trPz = Pz;}
-	Float_t setTrackPt(Float_t pt){m_trPt = pt;}
-	Float_t setTrackMomentum(Float_t momentum){m_trMomentum = momentum;}
+	void setTrackEventId(Long64_t id){m_trEventId=id;}
+	void setTrackEventFileId(Long64_t file){m_trEventFileId=file;}
+	void setTrackId(Int_t id){m_trId = id;}
+	void setTrackPDG(Int_t pdg){m_trPDG = pdg;}
+	void setTrackPx(Float_t Px){m_trPx = Px;}
+	void setTrackPy(Float_t Py){m_trPy = Py;}
+	void setTrackPz(Float_t Pz){m_trPz = Pz;}
+	void setTrackPt(Float_t pt){m_trPt = pt;}
+	void setTrackMomentum(Float_t momentum){m_trMomentum = momentum;}
 
 	// *** getters
 	Long64_t getTrackEventId(){return m_trEventId;}
