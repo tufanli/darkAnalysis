@@ -40,7 +40,7 @@ darkSectorUtilities::~darkSectorUtilities()
 
 }
 
-TFile *darkSectorUtilities::createSingleFluxFile(const char *inputRootFileName, const char *treeName, const char *outputRootFileName)
+void darkSectorUtilities::createSingleFluxFile(const char *inputRootFileName, const char *treeName, const char *outputRootFileName)
 {
   //  std::cout << __PRETTY_FUNCTION__ << std::endl;
   TFile *output = new TFile(outputRootFileName,"RECREATE");
@@ -109,7 +109,7 @@ TFile *darkSectorUtilities::createSingleFluxFile(const char *inputRootFileName, 
   output->Close();
 }
 
-TFile *darkSectorUtilities::createFluxFile(const char *dirName, 
+void darkSectorUtilities::createFluxFile(const char *dirName, 
 					   const char *ext, 
 					   const char *treeName, 
 					   const char *outputRootFileName)
@@ -219,7 +219,7 @@ TFile *darkSectorUtilities::createFluxFile(const char *dirName,
     }// if file
 }
 
-TFile *darkSectorUtilities::createSinglePiFluxFile(const char *inputRootFileName, 
+void darkSectorUtilities::createSinglePiFluxFile(const char *inputRootFileName, 
 						   const char *treeName, 
 						   const char *outputRootFileName,
 						   Int_t pdg)
@@ -273,7 +273,7 @@ TFile *darkSectorUtilities::createSinglePiFluxFile(const char *inputRootFileName
   output->Close();
 }
 
-TFile *darkSectorUtilities::createPi0File(const char *inputRootFileName, 
+void darkSectorUtilities::createPi0File(const char *inputRootFileName, 
 					  const char *treeName, 
 					  const char *outputRootFileName)
 {
@@ -328,7 +328,7 @@ void darkSectorUtilities::printTrackInfo(darkSectorTrack *tr)
   tr->Dump();
 }
 
-TFile *darkSectorUtilities::createMesonFile(const char *inputRootFileName, 
+void darkSectorUtilities::createMesonFile(const char *inputRootFileName, 
 					    const char *treeName, 
 					    const char *outputRootFileName)
 {
@@ -367,8 +367,8 @@ TFile *darkSectorUtilities::createMesonFile(const char *inputRootFileName,
 	  // ### Calculating the Pi0 (inferred) energy ###
 	  Float_t iE = TMath::Sqrt(0.139*0.139+pi0Momentum*pi0Momentum);
 
-	  //	  if((iE*iE)>(fM*fM)) ???
-	  if(iE>fM)
+	  if((iE*iE)>(fM*fM))
+	    //if(iE>fM)
 	    {
 	      meson->setMesonMass(fM);
 	      // ### The new 3-momentum of the meson is sqrt(E^2 - m^2)
@@ -458,7 +458,7 @@ void darkSectorUtilities::createFluxFromMesonFile(const char*inputRootFileName,
   output->Write();
 }
 
-TFile *darkSectorUtilities::createMediatorFile(const char *inputRootFileName, 
+void darkSectorUtilities::createMediatorFile(const char *inputRootFileName, 
 					       const char *treeName, 
 					       const char *outputRootFileName)
 {
@@ -530,8 +530,7 @@ TFile *darkSectorUtilities::createMediatorFile(const char *inputRootFileName,
       std::vector<TLorentzVector*> vectorToSelectBoson;
       std::vector<TLorentzVector*> vectorToSelectPhoton;
       
-      //      for(float m = 0.140; m<0.630; m+=0.010) // vector boson masses
-      for(float m = 0.140; m<1.1; m+=0.010) // vector boson masses
+      for(float m = 0.140; m<0.630; m+=0.010) // vector boson masses
 	{
 	  // *** decay generator
 	  TGenPhaseSpace mesonDecay;
@@ -613,7 +612,7 @@ TFile *darkSectorUtilities::createMediatorFile(const char *inputRootFileName,
   output->Close();
 }
 
-TFile *darkSectorUtilities::createDecayFile(const char *inputRootFileName, 
+void darkSectorUtilities::createDecayFile(const char *inputRootFileName, 
 					    const char *treeName, 
 					    const char *outputRootFileName)
 {
@@ -652,8 +651,8 @@ TFile *darkSectorUtilities::createDecayFile(const char *inputRootFileName,
   // ###################################
   // ### Looping over all the events ###
   // ###################################
-  //  for(Long64_t i=0;i<tr->GetEntries();i++) // *** meson track loop
-  for(Int_t i=0;i<20;i++)
+  for(Long64_t i=0;i<tr->GetEntries();i++) // *** meson track loop
+  //  for(Int_t i=0;i<20;i++)
     {      
       // ### Retreive this particular entry ###
       id->GetEntry(i);
