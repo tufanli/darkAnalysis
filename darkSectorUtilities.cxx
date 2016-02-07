@@ -365,10 +365,9 @@ void darkSectorUtilities::createMesonFile(const char *inputRootFileName,
 	  Float_t pi0Momentum = pi0->getTrackMomentum();
       
 	  // ### Calculating the Pi0 (inferred) energy ###
-	  Float_t iE = TMath::Sqrt(0.139*0.139+pi0Momentum*pi0Momentum);
+	  Float_t iE = TMath::Sqrt(0.13497*0.13497+pi0Momentum*pi0Momentum);
 
 	  if((iE*iE)>(fM*fM))
-	    //if(iE>fM)
 	    {
 	      meson->setMesonMass(fM);
 	      // ### The new 3-momentum of the meson is sqrt(E^2 - m^2)
@@ -437,11 +436,12 @@ void darkSectorUtilities::createFluxFromMesonFile(const char*inputRootFileName,
 
   Int_t pdgNumbers[5] = {221,223,113,331,333};
   // *** arxiv 1405.7049v1 --> Leptophobic Dark Matter at Neutrino Factories, Table I
-  Int_t mesonNumbers[5] ={0.033*numberOfPi0, 
-			  0.046*numberOfPi0, 
-			  0.05*numberOfPi0,
-			  0.0033*numberOfPi0,
-			  0.0067*numberOfPi0};
+
+  Int_t mesonNumbers[5] = {static_cast<Int_t>(0.033*numberOfPi0), 
+			   static_cast<Int_t>(0.046*numberOfPi0), 
+			   static_cast<Int_t>(0.05*numberOfPi0),
+			   static_cast<Int_t>(0.0033*numberOfPi0),
+			   static_cast<Int_t>(0.0067*numberOfPi0)};
 
   Int_t counter=0;
   for( auto pdgs : pdgNumbers )

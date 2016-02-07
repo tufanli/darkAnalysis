@@ -20,47 +20,51 @@ class darkSectorUtilities : public TObject
 
   virtual ~darkSectorUtilities();
   
-  // *** step-1: convert simulation root files (uboone*.root) or Flux.root to "darkSector" class object and save them into let say "simulatedFlux.root" file
+  // *** step-1A: convert a *single* simulation root file (uboone*.root) or Flux.root to "darkSector" class object and save into "simulatedFlux.root" file
   static void createSingleFluxFile(const char *inputRootFileName, 
 				     const char *treeName, 
 				     const char *outputRootFileName);
 
-  // cok buyuk dosyada birden fazla ttree olusturuyou AutoSave den!!!
+  // *** step-1B: convert serveral simulation root files (uboone*.root) or Flux.root to "darkSector" class objects and save into "simulatedFlux.root" file
+  // (loops over every flux file in directory); ext denotes keyword for a specific root file (e.g. uboone)
   static void createFluxFile(const char *dirName, 
 			       const char *ext, 
 			       const char *treeName, 
 			       const char *outputRootFileName);
     
-  // *** step-2: create pi+/pi-/pi0 flux file from "simulatedFlux.root" and save into let say "simulatedPionFlux.root"
+  // *** step-2: create pi+/pi-/pi0 flux file from "simulatedFlux.root" and save into "simulatedPionFlux.root"
   static void createSinglePiFluxFile(const char *inputRootFileName, 
 				       const char *treeName, 
 				       const char *outputRootFileName,
 				       Int_t pdg);
 
+  // *** step-3 create pi0 file
   static void createPi0File(const char *inputRootFileName, 
 			      const char *treeName, 
 			      const char *outputRootFileName);
 
-  // *** step-3: create meson file
-  // this file is without any weighting, 5 meson(eta, rho ,...) for each pi0
+  // *** step-4: create meson file
+  // Note: this file is without any weighting, a maximum of 5 mesons (eta, rho ,...) may be created for each pi0 mother
   static void createMesonFile(const char *inputRootFileName, 
 				const char *treeName, 
 				const char *outputRootFileName);
-  // this is the function to create flux meson file. It uses output of createMesonFile
+
+  // *** step-5: create meson flux file
+  // Applies branching ratio from arxiv 1405.7049v1 "Leptophobic Dark Matter at Neutrino Factories", Table I 
+  // It uses output of createMesonFile
   static void createFluxFromMesonFile(const char *inputRootFileName,
 				       const char *treeName,
 					const char *outputRootName);
 
   // ---> Branching ratio Tulin paper 4370
 
-  // *** step-4: create VB file
+  // *** step-6: create VB file
   // *** mediator interception with detectors are also in the function
   static void createMediatorFile(const char *inputRootFileName, 
 			     const char *treeName, 
 			     const char *outputRootFileName);
 
-  // *** step-5: create decay file --> Jonathan
-
+  // *** step-7: create decay file --> Jonathan
   // ---> probablity of decay
   // ---> decay position,
   static void createDecayFile(const char *inputRootFileName, 
@@ -68,7 +72,7 @@ class darkSectorUtilities : public TObject
 				const char *outputRootFileName);
 
 
-  // *** step-6: convert to HEP format
+  // *** step-8: convert to HEP format
 
 
 
