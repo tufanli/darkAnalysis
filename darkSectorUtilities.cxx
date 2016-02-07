@@ -459,8 +459,8 @@ void darkSectorUtilities::createFluxFromMesonFile(const char*inputRootFileName,
 }
 
 void darkSectorUtilities::createMediatorFile(const char *inputRootFileName, 
-					       const char *treeName, 
-					       const char *outputRootFileName)
+					     const char *treeName, 
+					     const char *outputRootFileName)
 {
   TFile *input = new TFile(inputRootFileName);
   TTree *tr = (TTree *)input->Get(treeName);
@@ -487,7 +487,7 @@ void darkSectorUtilities::createMediatorFile(const char *inputRootFileName,
     {   
       id->GetEntry(i);
       
-      TLorentzVector mesonLabFrame,mesonLabFrameToBoost; // initialized by (0., 0., 0., 0.)
+      TLorentzVector mesonLabFrame,mesonLabFrameToBoost;
       mesonLabFrameToBoost.SetPxPyPzE(meson->getTrackPx(),
 				      meson->getTrackPy(),
 				      meson->getTrackPz(),
@@ -542,7 +542,7 @@ void darkSectorUtilities::createMediatorFile(const char *inputRootFileName,
 	      if (meson->getTrackPDG() == 221 || meson->getTrackPDG() == 331)
 		{
 		  mesonDecay.SetDecay(mesonLabFrame,2,masses);
-		  mesonDecay.Generate(); // !!!! generate 1 random possible final state
+		  mesonDecay.Generate(); // !!!! generate 1 random possible final state !!!!
 		  TLorentzVector *vectorBoson=  mesonDecay.GetDecay(0);	  // vb
 		  TLorentzVector *initialPhoton = mesonDecay.GetDecay(1); // photon
 
@@ -561,13 +561,24 @@ void darkSectorUtilities::createMediatorFile(const char *inputRootFileName,
 		  delete vectorBoson;
 		  delete initialPhoton;
 		}
+	      // ***
 	      else
 		{
-		  Double_t masses[2] = {m,0.0}; // meson decays to vector boson with mass m and photon
-		  Float_t vectorBosonEnergy = TMath::Sqrt(meson->getTrackMomentum()*meson->getTrackMomentum() + m*m);
-		  TLorentzVector *vectorBoson = new TLorentzVector(0.,0.,0.,0.);	  
-		  TLorentzVector *initialPhoton = new TLorentzVector(0.,0.,0.,0.);	  
-		  vectorBoson->SetPxPyPzE(meson->getTrackPx(),meson->getTrackPy(),meson->getTrackPz(),vectorBosonEnergy);
+		  if(meson->getMesonEnergy()*meson->getMesonEnergy() >  m*m)
+		    {
+		      Float_t VB_P = TMath::Sqrt(meson->getMesonEnergy()*meson->getMesonEnergy() - m*m);
+		      Float_t vectorBosonEnergy = TMath::Sqrt(VB_P*VB_P + m*m);
+		      Float_t VB_Px = (VB_P*meson->getTrackPx())/meson->getTrackMomentum();
+		      Float_t VB_Py = (VB_P*meson->getTrackPy())/meson->getTrackMomentum();
+		      Float_t VB_Pz = (VB_P*meson->getTrackPz())/meson->getTrackMomentum();
+
+		      TLorentzVector *vectorBoson = new TLorentzVector(0.,0.,0.,0.);
+		      TLorentzVector *initialPhoton = new TLorentzVector(0.,0.,0.,0.);
+		      vectorBoson->SetPxPyPzE(VB_Px,VB_Py,VB_Pz,vectorBosonEnergy);
+
+		  //Float_t vectorBosonEnergy = TMath::Sqrt(meson->getTrackMomentum()*meson->getTrackMomentum() + m*m);
+		  //vectorBoson->SetPxPyPzE(meson->getTrackPx(),meson->getTrackPy(),meson->getTrackPz(),vectorBosonEnergy);
+
 
 		  // *** saves all the possible VBs and initial photons
 		  // vb->addVBVec(*vectorBoson);
@@ -580,6 +591,7 @@ void darkSectorUtilities::createMediatorFile(const char *inputRootFileName,
 		  initialPhoton=0;
 		  delete vectorBoson;
 		  delete initialPhoton;
+		    }
 		}
 	    } // *** if meson mass > ..       
 	  else
