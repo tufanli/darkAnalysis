@@ -681,7 +681,7 @@ void darkSectorUtilities::createDecayFile(const char *inputRootFileName,
 	  TGenPhaseSpace event_decay;
 	  // ### Setting the daughters of the vector boson mass ###
 	  // ###     e.g. pi0 = 135 MeV and photon = 0 MeV      ###
-	  double daughter_mass[2] = {0.139, 0.0};
+	  double daughter_mass[2] = {0.13497, 0.0};
 	
 	  event_decay.SetDecay(Temp, 2, daughter_mass);
 	  // ### Perform the decay ###
