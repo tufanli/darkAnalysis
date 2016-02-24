@@ -15,8 +15,8 @@ void simple()
 //  util.createMesonFile("pi0_ben.root","treePi0","meson_ben.root");//bu
 //  util.createFluxFromMesonFile("meson_ben.root","treeMeson","mesonFlux.root"); 
   util.createMediatorFile("mesonFlux.root","treeMeson","vb.root");//bu
-  util.applyBosonToMesonDecayWidthRatio("vb.root","treeVB");
-//  util.createDecayFile("vb.root","treeVB","decay.root");//bu
+  util.applyBosonToMesonDecayWidthRatio("vb.root","treeVB", "vb_withBR.root");
+//  util.createDecayFile("vb_withBR.root","treeVB","decay.root");//bu
 	
 
 
