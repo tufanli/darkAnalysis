@@ -14,6 +14,8 @@
 #include "TGenPhaseSpace.h"
 #include "TRandom3.h"
 #include "TBits.h"
+#include "TProfile.h"
+#include "TF1.h"
 
 #include <iostream>
 
@@ -24,6 +26,10 @@ ClassImp(darkSectorUtilities)
 
 Int_t createIdFromFileName(const TString &fname);
 TTree *createMesonFlux(TTree *tree,Int_t N, TTree *treeOut);
+//Int_t getBinFromMassVB(Double_t val);
+Int_t getBinFromMassVB(Double_t val, Double_t loopMin,Double_t loopMax, Double_t incriment);
+Int_t entriesInBinFromFitFunction(Int_t pdg, Double_t mvb, Int_t totalEntriesInBin);
+
 
 darkSectorUtilities::darkSectorUtilities()
 {
@@ -350,6 +356,7 @@ void darkSectorUtilities::createMesonFile(const char *inputRootFileName,
   TTree *potIn = (TTree *)input->Get("POT");
   TTree *potOut = potIn->CloneTree();
 
+  //eta,rho,w,etaprime,phi
   Float_t fakeMass[5] = {0.54785,0.77526,0.78265,0.95778,1.019461};
 
   for(Long64_t i=0;i<tr->GetEntries();i++)
@@ -389,8 +396,8 @@ void darkSectorUtilities::createMesonFile(const char *inputRootFileName,
 
 	      Int_t id; // meson pdg id
 	      if (fM == fakeMass[0]){ id = 221; } //<---Eta
-	      if (fM == fakeMass[1]){ id = 223; } //<---Omega
-	      if (fM == fakeMass[2]){ id = 113; } //<---Rho
+	      if (fM == fakeMass[1]){ id = 113; } //<---Rho
+	      if (fM == fakeMass[2]){ id = 223; } //<---Omega
 	      if (fM == fakeMass[3]){ id = 331; } //<---Eta-prime
 	      if (fM == fakeMass[4]){ id = 333; } //<---phi
 
@@ -481,6 +488,9 @@ void darkSectorUtilities::createMediatorFile(const char *inputRootFileName,
 
   TRandom3 randomGenerator;
   randomGenerator.SetSeed(0);
+
+  //new
+  TH1F *dene = new TH1F("h","",1000,0,10000000);
 
   for(Long64_t i=0;i<tr->GetEntries();i++) // *** meson track loop
     //for(Long64_t i=0;i<300;i++)
@@ -576,57 +586,56 @@ void darkSectorUtilities::createMediatorFile(const char *inputRootFileName,
 		      TLorentzVector *initialPhoton = new TLorentzVector(0.,0.,0.,0.);
 		      vectorBoson->SetPxPyPzE(VB_Px,VB_Py,VB_Pz,vectorBosonEnergy);
 
-		  //Float_t vectorBosonEnergy = TMath::Sqrt(meson->getTrackMomentum()*meson->getTrackMomentum() + m*m);
-		  //vectorBoson->SetPxPyPzE(meson->getTrackPx(),meson->getTrackPy(),meson->getTrackPz(),vectorBosonEnergy);
-
-
-		  // *** saves all the possible VBs and initial photons
-		  // vb->addVBVec(*vectorBoson);
-		  // vb->addPhotonVec(*initialPhoton);
-
-		  vectorToSelectBoson.push_back(vectorBoson);
-		  vectorToSelectPhoton.push_back(initialPhoton);
-
-		  vectorBoson=0;
-		  initialPhoton=0;
-		  delete vectorBoson;
-		  delete initialPhoton;
+		      //Float_t vectorBosonEnergy = TMath::Sqrt(meson->getTrackMomentum()*meson->getTrackMomentum() + m*m);
+		      //vectorBoson->SetPxPyPzE(meson->getTrackPx(),meson->getTrackPy(),meson->getTrackPz(),vectorBosonEnergy);
+		      		      
+		      // *** saves all the possible VBs and initial photons
+		      // vb->addVBVec(*vectorBoson);
+		      // vb->addPhotonVec(*initialPhoton);
+		      
+		      vectorToSelectBoson.push_back(vectorBoson);
+		      vectorToSelectPhoton.push_back(initialPhoton);
+		      
+		      vectorBoson=0;
+		      initialPhoton=0;
+		      delete vectorBoson;
+		      delete initialPhoton;
 		    }
 		}
 	    } // *** if meson mass > ..       
 	  else
 	    continue;
 	}// *** for m
+      
+      Int_t randNum=randomGenerator.Uniform(0,vectorToSelectBoson.size());      
+      vb->addVBVec(*vectorToSelectBoson.at(randNum));
+      vb->addPhotonVec(*vectorToSelectPhoton.at(randNum));
+      vb->setVBMass(vectorToSelectBoson.at(randNum)->M());
 
-	Int_t randNum=randomGenerator.Uniform(0,vectorToSelectBoson.size());
-	vb->addVBVec(*vectorToSelectBoson.at(randNum));
-	vb->addPhotonVec(*vectorToSelectPhoton.at(randNum));
-
-	Float_t sbndDet=2.83/110.0;
-	Float_t ubooneDet=1.77/470.0;
-	Float_t icarusDet=5.31/600.0;
-	
-	if(vectorToSelectBoson.at(randNum)->Theta()<sbndDet) 
-	  vb->setMediatorInterceptSBND(1);
-
-	if(vectorToSelectBoson.at(randNum)->Theta()<ubooneDet) 
-	  vb->setMediatorInterceptUBOONE(1);
-
-	if(vectorToSelectBoson.at(randNum)->Theta()<icarusDet) 
-	  vb->setMediatorInterceptICARUS(1);      
-	
-	treeOut->Fill();
-	delete vb;
+      Float_t sbndDet=2.83/110.0;
+      Float_t ubooneDet=1.77/470.0;
+      Float_t icarusDet=5.31/600.0;
+      
+      if(vectorToSelectBoson.at(randNum)->Theta()<sbndDet) 
+	vb->setMediatorInterceptSBND(1);
+      
+      if(vectorToSelectBoson.at(randNum)->Theta()<ubooneDet) 
+	vb->setMediatorInterceptUBOONE(1);
+      
+      if(vectorToSelectBoson.at(randNum)->Theta()<icarusDet) 
+	vb->setMediatorInterceptICARUS(1);      
+      
+      treeOut->Fill();
+      delete vb;
     } // event loop
-  
   output->cd();
   output->Write();
   output->Close();
 }
 
 void darkSectorUtilities::createDecayFile(const char *inputRootFileName, 
-					    const char *treeName, 
-					    const char *outputRootFileName)
+					  const char *treeName, 
+					  const char *outputRootFileName)
 {
 
   // ### Grabbing the input ROOT file of VB's ###
@@ -668,7 +677,6 @@ void darkSectorUtilities::createDecayFile(const char *inputRootFileName,
     {      
       // ### Retreive this particular entry ###
       id->GetEntry(i);
-      
       std::vector<TLorentzVector> vbTemp = vb->vectorBosonsVec();
       
       for (Long64_t a = 0; a < vbTemp.size(); a++)
@@ -755,6 +763,7 @@ void darkSectorUtilities::createDecayFile(const char *inputRootFileName,
 	
 	}//<---End loop over vector of VB's                 
     }///<---End event loop        
+
   output->cd();
   output->Write();
   output->Close();
@@ -802,4 +811,158 @@ TTree *createMesonFlux(TTree *tree,Int_t N, TTree *treeOut)
       treeOut->Fill();
     }
   return treeOut;
+}
+
+void darkSectorUtilities::applyBosonToMesonDecayWidthRatio(const char *inputRootFileName, 
+							   const char *treeName)
+{
+  /*
+    This function applies the 
+    [decay width (meson->B+*)] / [decay width (meson->SM)]
+    ratios calculated in arXiv:1404.4370v1
+   */
+
+  TFile *input = new TFile(inputRootFileName);
+  TTree *tr = (TTree *)input->Get(treeName);
+  
+  darkSectorVB *vb=0;
+  darkSectorVB *vbWithBR=0;
+    
+  // ### Grabbing the branch which holds the VB's
+  TBranch *id = tr->GetBranch("treeVB");
+  id->SetAddress(&vb);
+
+  TFile *output = new TFile("lannnnn.root","RECREATE");
+  TTree *treeOut = new TTree("treeVB","darkSectorVB");
+  treeOut->Branch("treeVB","darkSectorVB",&vbWithBR,32000,1);
+  treeOut->SetDirectory(output);
+  treeOut->BranchRef();
+
+  TTree *potIn = (TTree *)input->Get("POT");
+  TTree *potOut = potIn->CloneTree();
+
+  Int_t pdgNumbers[5] = {221,223,113,331,333};
+  Int_t allBinEntries[5][60], toFill[5][60];
+  // initilize arrays
+  for(int r=0;r<5;r++)
+    for(int s=0;s<60;s++){allBinEntries[r][s]=0;toFill[r][s]=0;}
+
+  // event loop
+  for(Long64_t i=0;i<tr->GetEntries();i++)
+    {      
+      id->GetEntry(i);
+      std::vector<TLorentzVector> vbTemp = vb->vectorBosonsVec();
+
+      // find the bin corresponding to vb mass. 
+      // since we are interesting the mass range from 0.14 to
+      // 0.63 with 0.01 incriment function arguments are (...,,0.14,0.63,0.01)
+      // if someone wants to check different mass region, these numbers
+      // have to be modified !!!      
+      Int_t bin = getBinFromMassVB(vb->getVBMass(),0.14,0.63,0.01);
+      Int_t pdg = vb->getTrackPDG();
+
+      int count=0;
+      // for each meson, get how many entries exist for each bin
+      // and store them to arrays
+      for( auto pdgs : pdgNumbers )
+	{
+	  if(pdgs==pdg)
+	    {
+	      allBinEntries[count][bin]++;
+	      break;
+	    }
+	  count++;
+	}
+    }
+
+  // new loop on the events, to get only the 
+  // expected number of events for each bin for each meson
+  for(Long64_t i=0;i<tr->GetEntries();i++)
+    {      
+      id->GetEntry(i);
+      // new darkSectorVB to save
+      vbWithBR=vb;
+
+      // be carefull for the range and incriment!!
+      Int_t bin = getBinFromMassVB(vb->getVBMass(),0.14,0.63,0.01);
+      Int_t pdg = vb->getTrackPDG();
+      Int_t countToFill=0;
+      for( auto pdgs : pdgNumbers )
+	{
+	  // for a given meson, for each bin, fill the expected number of entries to a new root tree
+	  // fit function is called by "entriesInBinFromFitFunction"
+	  if(pdgs==pdg && toFill[countToFill][bin]< entriesInBinFromFitFunction(pdg,vb->getVBMass(),allBinEntries[countToFill][bin]))
+	    {
+	      treeOut->Fill();
+	      toFill[countToFill][bin]++;
+	    }
+	  countToFill++;
+	}
+    }
+  output->cd();
+  output->Write();
+  output->Close();
+}
+
+Int_t entriesInBinFromFitFunction(Int_t pdg, Double_t mvb, Int_t totalEntriesInBin)
+{
+  // necessary numbers for fit functions
+  Double_t couplingEM=0.00729927;
+  Double_t etaMass= 0.54785;
+  Double_t rhoMass= 0.77526;
+  Double_t omegaMass= 0.78265;
+  Double_t etaPrimeMass= 0.95778;
+  Double_t phiMass= 1.019451;
+  Double_t omegaMassSquare= omegaMass*omegaMass;
+  Double_t phiMassSquare= phiMass*phiMass;
+  Double_t result = 0;
+
+  // define the fit function. It will be different for each meson
+  // details are in arXiv:1404.4370v1, appendix A
+  TF1 *function = 0;
+  if(pdg == 221)//eta
+    {
+      function = new TF1("function",Form("(1/%f)*pow((1-(pow(x,2)/pow(%f,2))),3)*0.5",couplingEM,etaMass),0.,0.54785);
+      result = totalEntriesInBin*function->Eval(mvb)/(function->Eval(mvb)+1);  //--> [function->Eval(mvb)/(function->Eval(mvb)+1)]% of the entries will be meson->B+*  
+    }
+  else if(pdg == 331)//etaprime
+    {
+      function = new TF1("function",Form("(1/%f)*pow((1-(pow(x,2)/pow(%f,2))),3)*0.0408",couplingEM,etaPrimeMass),0.,0.95778);
+      result = totalEntriesInBin*function->Eval(mvb)/(function->Eval(mvb)+1);  
+    }
+  else if(pdg == 223)//omega
+    {
+      function = new TF1("function",Form("(4/%f)*pow((%f-pow((%f+x),2))*(%f-pow((%f-x),2)),1.5)/pow((%f-pow((%f),2))*(%f-pow((%f),2)),1.5)",couplingEM, omegaMassSquare,etaMass,omegaMassSquare,etaMass,omegaMassSquare,etaMass,omegaMassSquare,etaMass),0,0.23);
+      result = totalEntriesInBin*function->Eval(mvb)/(function->Eval(mvb)+1);  
+    }
+  else if(pdg == 333) // phi
+    {
+      function = new TF1("function",Form("(1/%f)*pow((%f-pow((%f+x),2))*(%f-pow((%f-x),2)),1.5)/pow((%f-pow((%f),2))*(%f-pow((%f),2)),1.5)",couplingEM, phiMassSquare,etaMass,phiMassSquare,etaMass, phiMassSquare,etaMass, phiMassSquare,etaMass),0,0.47);
+      result = totalEntriesInBin*function->Eval(mvb)/(function->Eval(mvb)+1);  
+    }
+  else if(pdg==113) // rho
+    {
+      // in the paper it is noted that there is no contribution from rho!!
+      result = 0;  
+    }
+  else 
+    cout << "something is strange ... !!!" << endl;
+
+  delete function;
+  return static_cast<Int_t>(result);
+}
+
+Int_t getBinFromMassVB(Double_t val, Double_t loopMin,Double_t loopMax, Double_t incriment)
+{
+  // if you create the vb mass histogram for each meson
+  // what would be the bin number for specific vb mass
+
+  Int_t bin=1;//first bin
+  for(float m = loopMin; m<loopMax; m+=incriment) // vector boson masses
+    {
+      if((val-m) < incriment)
+	break;
+      bin++;
+    }
+    return bin;
 }
