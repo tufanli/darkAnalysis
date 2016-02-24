@@ -814,7 +814,8 @@ TTree *createMesonFlux(TTree *tree,Int_t N, TTree *treeOut)
 }
 
 void darkSectorUtilities::applyBosonToMesonDecayWidthRatio(const char *inputRootFileName, 
-							   const char *treeName)
+							   const char *treeName,
+							   const char *outputName)
 {
   /*
     This function applies the 
@@ -832,7 +833,7 @@ void darkSectorUtilities::applyBosonToMesonDecayWidthRatio(const char *inputRoot
   TBranch *id = tr->GetBranch("treeVB");
   id->SetAddress(&vb);
 
-  TFile *output = new TFile("lannnnn.root","RECREATE");
+  TFile *output = new TFile(outputName,"RECREATE");
   TTree *treeOut = new TTree("treeVB","darkSectorVB");
   treeOut->Branch("treeVB","darkSectorVB",&vbWithBR,32000,1);
   treeOut->SetDirectory(output);
@@ -922,31 +923,38 @@ Int_t entriesInBinFromFitFunction(Int_t pdg, Double_t mvb, Int_t totalEntriesInB
   TF1 *function = 0;
   if(pdg == 221)//eta
     {
-      function = new TF1("function",Form("(1/%f)*pow((1-(pow(x,2)/pow(%f,2))),3)*0.5",couplingEM,etaMass),0.,0.54785);
-      result = totalEntriesInBin*function->Eval(mvb)/(function->Eval(mvb)+1);  //--> [function->Eval(mvb)/(function->Eval(mvb)+1)]% of the entries will be meson->B+*  
+      if(mvb<=0.54785)
+	function = new TF1("function",Form("(1/%f)*pow((1-(pow(x,2)/pow(%f,2))),3)*0.5",couplingEM,etaMass),0.,0.54785);
+      else
+	function = new TF1("function","0*x",0.54786,1.1);
     }
   else if(pdg == 331)//etaprime
     {
-      function = new TF1("function",Form("(1/%f)*pow((1-(pow(x,2)/pow(%f,2))),3)*0.0408",couplingEM,etaPrimeMass),0.,0.95778);
-      result = totalEntriesInBin*function->Eval(mvb)/(function->Eval(mvb)+1);  
+      if(mvb<=0.95778)
+	function = new TF1("function",Form("(1/%f)*pow((1-(pow(x,2)/pow(%f,2))),3)*0.0408",couplingEM,etaPrimeMass),0.,0.95778);
+      else
+       	function = new TF1("function","0*x",0.95779,1.1);
     }
   else if(pdg == 223)//omega
     {
-      function = new TF1("function",Form("(4/%f)*pow((%f-pow((%f+x),2))*(%f-pow((%f-x),2)),1.5)/pow((%f-pow((%f),2))*(%f-pow((%f),2)),1.5)",couplingEM, omegaMassSquare,etaMass,omegaMassSquare,etaMass,omegaMassSquare,etaMass,omegaMassSquare,etaMass),0,0.23);
-      result = totalEntriesInBin*function->Eval(mvb)/(function->Eval(mvb)+1);  
+      if(mvb<=0.23)
+	function = new TF1("function",Form("(4/%f)*pow((%f-pow((%f+x),2))*(%f-pow((%f-x),2)),1.5)/pow((%f-pow((%f),2))*(%f-pow((%f),2)),1.5)",couplingEM, omegaMassSquare,etaMass,omegaMassSquare,etaMass,omegaMassSquare,etaMass,omegaMassSquare,etaMass),0,0.23);
+      else
+       	function = new TF1("function","0*x",0.23001,1.1);
     }
   else if(pdg == 333) // phi
     {
-      function = new TF1("function",Form("(1/%f)*pow((%f-pow((%f+x),2))*(%f-pow((%f-x),2)),1.5)/pow((%f-pow((%f),2))*(%f-pow((%f),2)),1.5)",couplingEM, phiMassSquare,etaMass,phiMassSquare,etaMass, phiMassSquare,etaMass, phiMassSquare,etaMass),0,0.47);
-      result = totalEntriesInBin*function->Eval(mvb)/(function->Eval(mvb)+1);  
+      if(mvb<=0.47)
+	function = new TF1("function",Form("(1/%f)*pow((%f-pow((%f+x),2))*(%f-pow((%f-x),2)),1.5)/pow((%f-pow((%f),2))*(%f-pow((%f),2)),1.5)",couplingEM, phiMassSquare,etaMass,phiMassSquare,etaMass, phiMassSquare,etaMass, phiMassSquare,etaMass),0,0.47);
+      else
+       	function = new TF1("function","0*x",0.47001,1.1);	
     }
   else if(pdg==113) // rho
-    {
-      // in the paper it is noted that there is no contribution from rho!!
-      result = 0;  
-    }
+    function = new TF1("function","0*x",0,0.7);// in the paper it is noted that there is no contribution from rho!!   
   else 
     cout << "something is strange ... !!!" << endl;
+  
+    result = totalEntriesInBin*function->Eval(mvb)/(function->Eval(mvb)+1);  //--> [function->Eval(mvb)/(function->Eval(mvb)+1)]% of the entries will be meson->B+*  
 
   delete function;
   return static_cast<Int_t>(result);

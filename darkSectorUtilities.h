@@ -58,7 +58,7 @@ class darkSectorUtilities : public TObject
 
   // ---> Decay Width ratios Tulin paper arXiv:1404.4370v1
   static void applyBosonToMesonDecayWidthRatio(const char *inputRootFileName, 
-					       const char *treeName);
+					       const char *treeName, const char *outputName);
   
   // *** step-6: create VB file
   // *** mediator interception with detectors are also in the function
