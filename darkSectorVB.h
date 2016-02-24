@@ -20,12 +20,14 @@ class darkSectorVB : public darkSectorTrack
   virtual ~darkSectorVB();
   
   // *** setters
+  void setVBMass(Float_t mass){m_vbMass=mass;}
   void setInvMass(Float_t invmass){m_vbInvMass=invmass;}
   void setMediatorInterceptSBND(Int_t inter){m_vbInterceptSBND=inter;}
   void setMediatorInterceptUBOONE(Int_t inter){m_vbInterceptUBOONE=inter;}
   void setMediatorInterceptICARUS(Int_t inter){m_vbInterceptICARUS=inter;}
 
   // *** getters
+  Float_t getVBMass(){return m_vbMass;}
   Float_t getInvMass(){return m_vbInvMass;}
   Int_t getMediatorInterceptSBND(){return m_vbInterceptSBND;}
   Int_t getMediatorInterceptUBOONE(){return m_vbInterceptUBOONE;}
@@ -39,6 +41,7 @@ class darkSectorVB : public darkSectorTrack
 
  protected:
   Float_t m_vbInvMass;
+  Float_t m_vbMass;
   Int_t m_vbInterceptSBND;
   Int_t m_vbInterceptUBOONE;
   Int_t m_vbInterceptICARUS;

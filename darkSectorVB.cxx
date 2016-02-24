@@ -5,6 +5,7 @@ ClassImp(darkSectorVB)
 
 darkSectorVB::darkSectorVB()
 {
+  m_vbMass = 0;
   m_vbInvMass = 0;
   m_vbInterceptSBND=0;
   m_vbInterceptUBOONE=0;
@@ -13,6 +14,7 @@ darkSectorVB::darkSectorVB()
 
 darkSectorVB::darkSectorVB(const darkSectorVB &a)
 {
+  m_vbMass = a.m_vbMass;
   m_vbInvMass = a.m_vbInvMass;
   m_vbInterceptSBND=a.m_vbInterceptSBND;
   m_vbInterceptUBOONE=a.m_vbInterceptUBOONE;
