@@ -16,6 +16,7 @@
 #include "TBits.h"
 #include "TProfile.h"
 #include "TF1.h"
+#include "TH1D.h"
 
 #include <iostream>
 
@@ -29,7 +30,8 @@ TTree *createMesonFlux(TTree *tree,Int_t N, TTree *treeOut);
 //Int_t getBinFromMassVB(Double_t val);
 Int_t getBinFromMassVB(Double_t val, Double_t loopMin,Double_t loopMax, Double_t incriment);
 Int_t entriesInBinFromFitFunction(Int_t pdg, Double_t mvb, Int_t totalEntriesInBin);
-
+Double_t getDecayLifetime(Double_t vb_mass);//, TLorentzVector tempVec, Int_t detectorID);
+TH1D* dLifetime();
 
 darkSectorUtilities::darkSectorUtilities()
 {
@@ -662,13 +664,22 @@ void darkSectorUtilities::createDecayFile(const char *inputRootFileName,
   treeOut->Branch("treeVBDecay","darkSectorFinalState",&fs,32000,1);
   treeOut->SetDirectory(output);
   treeOut->BranchRef();
+  //  TH1D *meanlifetime1 = new TH1D("meanlifetime1","",# bins,lowbin,highbin);
 
   TTree *potIn = (TTree *)input->Get("POT");
   TTree *potOut = potIn->CloneTree();
   
   TLorentzVector TempPi0, TempPhoton0, TempPhoton1, TempPhoton2;
   TLorentzVector Temp;
+  //  TH1D* referenceHisto = dLifetime();
 
+  Float_t sbndDet_front = 2.83 / 110.0;
+  Float_t sbndDet_back = 2.83 /113.6;
+  Float_t ubooneDet_front = 1.77 / 470.0;
+  Float_t ubooneDet_back = 1.77 / 480.0;
+  Float_t icarusDet_front = 5.31 / 600;
+  Float_t icarusDet_back = 5.31 / 619.6;
+  
   // ###################################
   // ### Looping over all the events ###
   // ###################################
@@ -680,8 +691,26 @@ void darkSectorUtilities::createDecayFile(const char *inputRootFileName,
       std::vector<TLorentzVector> vbTemp = vb->vectorBosonsVec();
       
       for (Long64_t a = 0; a < vbTemp.size(); a++)
-      	{
-	  std::cout<<"Px = "<<vbTemp[a].Px()<<std::endl;
+      	{	
+	  Int_t sbndIntercept = vb->getMediatorInterceptSBND();
+	  Int_t ubooneIntercept = vb->getMediatorInterceptUBOONE();
+	  Int_t icarusIntercept = vb->getMediatorInterceptICARUS();  
+	  if( sbndIntercept == 0 && ubooneIntercept == 0 && icarusIntercept == 0) continue;
+	  
+	  Double_t vb_mass = vbTemp.at(a).M(); // The mass read out is incorrect!
+	  //  Double_t meanLifetime = referenceHisto->GetBinContent(300); // The lifetime read out is ZERO!
+	  Double_t meanLifetime = getDecayLifetime(vb_mass);
+	  Double_t decayDistance = vbTemp.at(a).Beta()*meanLifetime*299792458;
+	  std::cout << "Mean lifetime: " << meanLifetime 
+		    << " VB mass: " << vb_mass 
+		    << " VB velocity: "<< vbTemp.at(a).Beta()*299792458  
+		    << " Beta: " << vbTemp.at(a).Beta()
+		    << " Distance: " << decayDistance << std::endl;
+	  
+	  if(icarusIntercept == 1 && decayDistance > 600 && decayDistance < 619.6)
+	    {std::cout << "We found a decay!" << std::endl;}
+
+	  //  std::cout<<"Px = "<<vbTemp[a].Px()<<std::endl;
 	  // ### Filling a temporary Lorentz Vector ###
 	  Temp.SetPxPyPzE(vbTemp[a].Px(), vbTemp[a].Py(), vbTemp[a].Pz(), vbTemp[a].E() );
 	
@@ -762,9 +791,9 @@ void darkSectorUtilities::createDecayFile(const char *inputRootFileName,
 	  treeOut->Fill();
 	
 	}//<---End loop over vector of VB's                 
-    }///<---End event loop        
-
+    }///<---End event loop       
   output->cd();
+  //  meanlifetime1->Write();
   output->Write();
   output->Close();
 }
@@ -974,3 +1003,37 @@ Int_t getBinFromMassVB(Double_t val, Double_t loopMin,Double_t loopMax, Double_t
     }
     return bin;
 }
+
+Double_t getDecayLifetime(Double_t vb_mass)
+{
+  Double_t alpha_B = 1;
+  Double_t pionDecayConstant = 0.093; // GeV
+  Double_t alpha_EM =  7.29735257*pow(10.0,-3.0) ; // fine structure constant
+  //  std::cout << "alpha_em" << alpha_EM << std::endl;
+  Double_t pi0_mass = 0.13497; // Pi0 mass (in GeV)
+  //  Double_t partialWidth = ( alpha_B * alpha_EM * pow(vb_mass,3.0)* pow(1-(pow(pi0_mass,2.0)/pow(vb_mass,2.0)),3.0) ) / ( 96.0 * pow(TMath::Pi(),3.0) * pow(pionDecayConstant,2.0) );
+  Double_t partialWidth = (alpha_B * alpha_EM * pow(vb_mass,3) * pow((1-(pow(pi0_mass,2))/pow(vb_mass,2)),3)) / (96 * 27 * pow(pionDecayConstant,2));
+  std::cout << "Partial Width: :" << partialWidth << std::endl;
+  Double_t partialWidth_eV = partialWidth*pow(10,9);
+  std:: cout << "PW: " << partialWidth_eV << std::endl;
+  Double_t hbar =  6.582*pow(10,-16) ; // eV s
+    Double_t decayLifetime = hbar / partialWidth_eV;
+  //  Double_t decayLifetime = 1 / partialWidth;
+  /*
+  TF1 *func = new TF1("func",Form("(%f*pow(x,3)))/(96*27*0.093*0.093)*pow((1-pow(%f,2)/pow(x,2)),3)",alpha_EM,pi0_mass),0,0.7);
+  func->Draw(); */
+  return decayLifetime;
+} // <-- end getDecayLifetime
+
+TH1D* dLifetime()
+{
+  TH1D* dLifetime = new TH1D("dLifetime","",48,140,620);
+  for(Int_t i=140; i < 630; i = i + 10)
+    {
+      Double_t getDL = getDecayLifetime(i);
+      std::cout << "Decay Lifetime: " << getDL << " for mass " << i << " MeV." << std::endl;
+      dLifetime->SetBinContent(i,getDL);
+    } // <-- end i loop
+  return dLifetime;
+} // <-- end decayLifetime
+

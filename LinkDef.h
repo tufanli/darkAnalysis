@@ -14,7 +14,9 @@
 #pragma link C++ class darkSectorUtilities+;
 #pragma link C++ class darkSectorMeson+;
 #pragma link C++ class darkSectorVB+;
+#pragma link C++ class darkSectorDecayProbability+;
 #pragma link C++ class darkSectorFinalState+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
+
 

@@ -27,7 +27,6 @@ m_trEventFileId=a.m_trEventFileId;
   m_trPz=a.m_trPz;
   m_trPt=a.m_trPt;
   m_trMomentum=a.m_trMomentum;
-
 }
 
 darkSectorTrack::~darkSectorTrack()

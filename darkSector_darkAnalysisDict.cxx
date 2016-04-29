@@ -38,6 +38,7 @@
 namespace std {} using namespace std;
 
 // Header files passed as explicit arguments
+#include "darkSectorDecayProbability.h"
 #include "darkSectorEvent.h"
 #include "darkSectorFinalState.h"
 #include "darkSectorMeson.h"
@@ -205,6 +206,38 @@ namespace ROOT {
    }
    // Static variable to force the class initialization
    static ::ROOT::TGenericClassInfo *_R__UNIQUE_(Init) = GenerateInitInstanceLocal((const ::darkSectorVB*)0x0); R__UseDummy(_R__UNIQUE_(Init));
+} // end of namespace ROOT
+
+namespace ROOT {
+   static void *new_darkSectorDecayProbability(void *p = 0);
+   static void *newArray_darkSectorDecayProbability(Long_t size, void *p);
+   static void delete_darkSectorDecayProbability(void *p);
+   static void deleteArray_darkSectorDecayProbability(void *p);
+   static void destruct_darkSectorDecayProbability(void *p);
+
+   // Function generating the singleton type initializer
+   static TGenericClassInfo *GenerateInitInstanceLocal(const ::darkSectorDecayProbability*)
+   {
+      ::darkSectorDecayProbability *ptr = 0;
+      static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::darkSectorDecayProbability >(0);
+      static ::ROOT::TGenericClassInfo 
+         instance("darkSectorDecayProbability", ::darkSectorDecayProbability::Class_Version(), "darkSectorDecayProbability.h", 9,
+                  typeid(::darkSectorDecayProbability), DefineBehavior(ptr, ptr),
+                  &::darkSectorDecayProbability::Dictionary, isa_proxy, 4,
+                  sizeof(::darkSectorDecayProbability) );
+      instance.SetNew(&new_darkSectorDecayProbability);
+      instance.SetNewArray(&newArray_darkSectorDecayProbability);
+      instance.SetDelete(&delete_darkSectorDecayProbability);
+      instance.SetDeleteArray(&deleteArray_darkSectorDecayProbability);
+      instance.SetDestructor(&destruct_darkSectorDecayProbability);
+      return &instance;
+   }
+   TGenericClassInfo *GenerateInitInstance(const ::darkSectorDecayProbability*)
+   {
+      return GenerateInitInstanceLocal((::darkSectorDecayProbability*)0);
+   }
+   // Static variable to force the class initialization
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_(Init) = GenerateInitInstanceLocal((const ::darkSectorDecayProbability*)0x0); R__UseDummy(_R__UNIQUE_(Init));
 } // end of namespace ROOT
 
 namespace ROOT {
@@ -415,6 +448,41 @@ TClass *darkSectorVB::Class()
 }
 
 //______________________________________________________________________________
+atomic_TClass_ptr darkSectorDecayProbability::fgIsA(0);  // static to hold class pointer
+
+//______________________________________________________________________________
+const char *darkSectorDecayProbability::Class_Name()
+{
+   return "darkSectorDecayProbability";
+}
+
+//______________________________________________________________________________
+const char *darkSectorDecayProbability::ImplFileName()
+{
+   return ::ROOT::GenerateInitInstanceLocal((const ::darkSectorDecayProbability*)0x0)->GetImplFileName();
+}
+
+//______________________________________________________________________________
+int darkSectorDecayProbability::ImplFileLine()
+{
+   return ::ROOT::GenerateInitInstanceLocal((const ::darkSectorDecayProbability*)0x0)->GetImplFileLine();
+}
+
+//______________________________________________________________________________
+TClass *darkSectorDecayProbability::Dictionary()
+{
+   fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::darkSectorDecayProbability*)0x0)->GetClass();
+   return fgIsA;
+}
+
+//______________________________________________________________________________
+TClass *darkSectorDecayProbability::Class()
+{
+   if (!fgIsA.load()) { R__LOCKGUARD2(gInterpreterMutex); fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::darkSectorDecayProbability*)0x0)->GetClass(); }
+   return fgIsA;
+}
+
+//______________________________________________________________________________
 atomic_TClass_ptr darkSectorFinalState::fgIsA(0);  // static to hold class pointer
 
 //______________________________________________________________________________
@@ -615,6 +683,39 @@ namespace ROOT {
 } // end of namespace ROOT for class ::darkSectorVB
 
 //______________________________________________________________________________
+void darkSectorDecayProbability::Streamer(TBuffer &R__b)
+{
+   // Stream an object of class darkSectorDecayProbability.
+
+   if (R__b.IsReading()) {
+      R__b.ReadClassBuffer(darkSectorDecayProbability::Class(),this);
+   } else {
+      R__b.WriteClassBuffer(darkSectorDecayProbability::Class(),this);
+   }
+}
+
+namespace ROOT {
+   // Wrappers around operator new
+   static void *new_darkSectorDecayProbability(void *p) {
+      return  p ? new(p) ::darkSectorDecayProbability : new ::darkSectorDecayProbability;
+   }
+   static void *newArray_darkSectorDecayProbability(Long_t nElements, void *p) {
+      return p ? new(p) ::darkSectorDecayProbability[nElements] : new ::darkSectorDecayProbability[nElements];
+   }
+   // Wrapper around operator delete
+   static void delete_darkSectorDecayProbability(void *p) {
+      delete ((::darkSectorDecayProbability*)p);
+   }
+   static void deleteArray_darkSectorDecayProbability(void *p) {
+      delete [] ((::darkSectorDecayProbability*)p);
+   }
+   static void destruct_darkSectorDecayProbability(void *p) {
+      typedef ::darkSectorDecayProbability current_t;
+      ((current_t*)p)->~current_t();
+   }
+} // end of namespace ROOT for class ::darkSectorDecayProbability
+
+//______________________________________________________________________________
 void darkSectorFinalState::Streamer(TBuffer &R__b)
 {
    // Stream an object of class darkSectorFinalState.
@@ -713,6 +814,7 @@ namespace ROOT {
 namespace {
   void TriggerDictionaryInitialization_libdarkSector_darkAnalysis_Impl() {
     static const char* headers[] = {
+"darkSectorDecayProbability.h",
 "darkSectorEvent.h",
 "darkSectorFinalState.h",
 "darkSectorMeson.h",
@@ -732,11 +834,12 @@ R"DICTFWDDCLS(
 #pragma clang diagnostic ignored "-Wignored-attributes"
 #pragma clang diagnostic ignored "-Wreturn-type-c-linkage"
 extern int __Cling_Autoloading_Map;
-class __attribute__((annotate("$clingAutoload$darkSectorFinalState.h")))  darkSectorTrack;
+class __attribute__((annotate("$clingAutoload$darkSectorDecayProbability.h")))  darkSectorTrack;
 class __attribute__((annotate("$clingAutoload$darkSectorEvent.h")))  darkSectorEvent;
 class __attribute__((annotate("$clingAutoload$darkSectorUtilities.h")))  darkSectorUtilities;
 class __attribute__((annotate("$clingAutoload$darkSectorMeson.h")))  darkSectorMeson;
 class __attribute__((annotate("$clingAutoload$darkSectorVB.h")))  darkSectorVB;
+class __attribute__((annotate("$clingAutoload$darkSectorDecayProbability.h")))  darkSectorDecayProbability;
 class __attribute__((annotate("$clingAutoload$darkSectorFinalState.h")))  darkSectorFinalState;
 )DICTFWDDCLS";
     static const char* payloadCode = R"DICTPAYLOAD(
@@ -746,6 +849,7 @@ class __attribute__((annotate("$clingAutoload$darkSectorFinalState.h")))  darkSe
 #endif
 
 #define _BACKWARD_BACKWARD_WARNING_H
+#include "darkSectorDecayProbability.h"
 #include "darkSectorEvent.h"
 #include "darkSectorFinalState.h"
 #include "darkSectorMeson.h"
@@ -756,6 +860,7 @@ class __attribute__((annotate("$clingAutoload$darkSectorFinalState.h")))  darkSe
 #undef  _BACKWARD_BACKWARD_WARNING_H
 )DICTPAYLOAD";
     static const char* classesHeaders[]={
+"darkSectorDecayProbability", payloadCode, "@",
 "darkSectorEvent", payloadCode, "@",
 "darkSectorFinalState", payloadCode, "@",
 "darkSectorMeson", payloadCode, "@",
